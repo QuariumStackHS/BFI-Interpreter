@@ -10,7 +10,7 @@
 EXT:
 [M] print as Math ints
 [S] print as String ints
-["]begin Commentary&end Commentary
+[#]begin Commentary&end Commentary
 [%]( name direction set in name by first char(<>)) (Set Cells); exemple %<exemplename%
 [*]square nbr   √
 [@]open file( name direction set in name by first char(<>)) until value is 0 exemple @<@
@@ -18,46 +18,11 @@ EXT:
 [!]write char to file
 [;]exit program √
 */
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-using namespace std;
-#ifndef CODESEGMPTR
-#define Value int
-#define VMAP map<Value, Value>
-#define DATASEGM Cell
-#define CODESEGM string
-#define TEMP vector<Value>
-#define VMAPPTR VMAP *
-#define TEMPPTR TEMP *
-#define CODESEGMPTR CODESEGM *
-#define DATASEGMPTR DATASEGM *
-#define THISCELL DataSegm
-#define THISCELLVALUE THISCELL->This
-/*
-2 -2 0 0 0 0 0 0 0
-2 0 0 0 0 0 0 0 0
-++^++[>--*<-]
-*/
-struct Cell
-{
-    Cell *RightCell = nullptr;
-    Cell *LeftCell = nullptr;
-    Value This = 0;
-};
-Cell *New_Cell()
-{
-    return new Cell;
-}
-void Link(Cell *left, Cell *Right)
-{
-    left->RightCell = Right;
-    Right->LeftCell = left;
-}
 
-#define STOP break;
+
+
+#ifndef CODESEGMPTR
+#include "DataSegm.hpp"
 class ExtendedBrainfuckhehe
 {
 private:
@@ -66,6 +31,7 @@ private:
     TEMPPTR temp;
     Value index = 0;
     DATASEGMPTR DataSegm;
+    map<int,bool>CodeOrCom;
     Cell *Go_Left(Cell *This)
     {
         index--;
@@ -73,6 +39,7 @@ private:
         if (!cell)
         {
             cell = new Cell;
+            cell->Index = index;
             Link(cell, This);
         }
         return cell;
@@ -84,6 +51,7 @@ private:
         if (!cell)
         {
             cell = new Cell;
+            cell->Index = index;
             Link(This, cell);
         }
         return cell;
@@ -105,7 +73,8 @@ private:
                 (*VMap)[B] = A;
                 /* code */
                 STOP
-
+                case '#':
+                    STOP
                     default : STOP
             }
         }
@@ -120,11 +89,12 @@ private:
         char direction = (*CodeSegm)[i];
         i++;
         int ireplace = 0;
-        int jreplace=0;
+        int jreplace = 0;
         for (int j = i; j < CodeSegm->size(); j++)
         {
             if ((*CodeSegm)[j] == '%')
-            {jreplace=j;
+            {
+                jreplace = j;
                 j = CodeSegm->size();
             }
             Noze = (direction == '<') ? Go_Left(Noze) : Go_Right(Noze);
@@ -135,9 +105,12 @@ private:
         }
         index = Tempindex;
         THISCELL = temp;
-        THISCELLVALUE = jreplace-i;
+        THISCELLVALUE = jreplace - i;
 
         return ireplace;
+    }
+    Value *ReadRamUntil0()
+    {
     }
     void printcell(Cell *T)
     {
@@ -146,10 +119,24 @@ private:
         else
             cout << (char)T->This;
     }
+    void DebugPrintAllCells(Cell *head)
+    {
+        while (head->LeftCell != nullptr)
+            head = head->LeftCell;
+        while (head != nullptr)
+        {
+            head = head->RightCell;
+            if (head)
+                cout << "[" << to_string((char)head->This) << " ( " << (char)head->This << " , "<<head->Index<<" )],";
+        }
+        cout << endl;
+    }
 
 public:
+    // we whould add a map of Value to bool for comentary
     void Execute()
     {
+        ofstream *K;
         for (Value i = 0; i < (CodeSegm->size()); i++)
         {
             // cout<<i<<endl;
@@ -162,12 +149,14 @@ public:
                 STOP case ',' : THISCELL->This = getchar();
                 STOP case '+' : THISCELLVALUE++;
                 STOP case '-' : THISCELLVALUE--;
+                STOP case '@' : ReadRamUntil0();
                 STOP case '[' : i = (THISCELLVALUE != 0) ? i : (*VMap)[i];
                 STOP case ']' : i = (THISCELLVALUE != 0) ? (*VMap)[i] : i;
                 STOP case 'M' : PrintasMath = 1;
                 STOP case 'S' : PrintasMath = 0;
                 STOP case '%' : i = ReadConst(i);
-                STOP case ';' : i=CodeSegm->size();
+                STOP case ';' : i = CodeSegm->size();
+                STOP case '!' : DebugPrintAllCells(THISCELL);
                 STOP default : STOP
             }
         }
