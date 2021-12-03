@@ -37,4 +37,6 @@ void Link(Cell *left, Cell *Right)
     Right->LeftCell = left;
 }
 
-#define STOP break;
+#define STOP \
+    ;        \
+    break;
