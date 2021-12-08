@@ -14,12 +14,11 @@ using namespace std;
 #define CODESEGMPTR CODESEGM *
 #define DATASEGMPTR DATASEGM *
 #define THISCELL DataSegm
+#define THISCELLPTR DataSegm*
 #define THISCELLVALUE THISCELL->This
-/*
-2 -2 0 0 0 0 0 0 0
-2 0 0 0 0 0 0 0 0
-++^++[>--*<-]
-*/
+#define DATASEGMPTRMAP map<Value, DATASEGMPTR>
+#define DATASEGMPTRMAPPTR map<Value, DATASEGMPTR> *
+#define MAPINT2BOOL map<int, bool>
 struct Cell
 {
     Cell *RightCell = nullptr;

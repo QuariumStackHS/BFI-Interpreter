@@ -8,33 +8,48 @@
 [-] decr    √
 [+] incr    √
 EXT:
-[0] yes 0 is a keyword for.. setting to zero the pointed cell
-[M] print as Math ints
-[S] print as String ints
+[Ø] yes 0 is a keyword for.. setting to zero the pointed cell √ alt+shift+o= Ø
+[M] print as Math ints(ints being cellValue) √
+[S] print as String ints √
+[^] Save currentcell in map[Dataindex] then increment Dataindex and set currentcell to
+[V] Save currentcell in map[Dataindex] then decrement Dataindex and set currentcell to
 [#]begin Commentary&end Commentary
 [%]( name direction set in name by first char(<>)) (Set Cells); exemple %<exemplename%
 [*]square nbr   √
-[@]open file( name direction set in name by first char(<>)) until value is 0 exemple @<@
+[)]go left until 0 alt + \ 
+[(]go right until 0 alt+shift+ \
+[@]save state (for ^ & V) 
+[&]open file( name direction set in name by first char(<>)) until value is 0 exemple @<@
+[$] bash command
 [?]read next char from file overwriting cell
-[!]write char to file
-[;]exit program √
+[/]write char to file
+[:]close file
+[!]print all cell
+[;]exit program
 */
-
+#define IFNOTNULL(A)
 #ifndef CODESEGMPTR
 #include "DataSegm.hpp"
-class ExtendedBrainfuckhehe
+class RelttFuck
 {
 private:
     CODESEGMPTR CodeSegm;
     VMAPPTR VMap;
     TEMPPTR temp;
     Value index = 0;
+    Value DATAindex = 0;
+    DATASEGMPTRMAPPTR DataSegmS_;
     DATASEGMPTR DataSegm;
-    map<int, bool> CodeOrCom = map<int, bool>();
-    Cell *Go_Left(Cell *This)
+    MAPINT2BOOL CodeOrCom;
+#define SaveState (*DataSegmS_)[DATAindex] = THISCELL
+#define Go(A) \
+    A DATAindex;\
+    SaveState = ((*DataSegmS_)[DATAindex] == nullptr) ? New_Cell() : (*DataSegmS_)[DATAindex];\
+    index = THISCELL->Index;
+    DATASEGMPTR Go_Left(DATASEGMPTR This)
     {
         index--;
-        Cell *cell = This->LeftCell;
+        DATASEGMPTR cell = This->LeftCell;
         if (!cell)
         {
             cell = new Cell;
@@ -43,10 +58,10 @@ private:
         }
         return cell;
     }
-    Cell *Go_Right(Cell *This)
+    DATASEGMPTR Go_Right(DATASEGMPTR This)
     {
         index++;
-        Cell *cell = This->RightCell;
+        DATASEGMPTR cell = This->RightCell;
         if (!cell)
         {
             cell = new Cell;
@@ -55,12 +70,25 @@ private:
         }
         return cell;
     }
-    string ReadtoRight(){
-        string Ret="";
-        Cell *cell
-        while (cell->This!=0){
-             cell= This->RightCell;
-            ret+=(char)cell->This;
+    string ReadtoRight()
+    {
+        string Ret = "";
+        DATASEGMPTR cell = THISCELL;
+        while (cell->This != 0)
+        {
+            cell = cell->RightCell;
+            Ret += (char)cell->This;
+        }
+        return Ret;
+    }
+    string ReadtoLeft()
+    {
+        string Ret = "";
+        DATASEGMPTR cell = THISCELL;
+        while (cell->This != 0)
+        {
+            cell = cell->LeftCell;
+            Ret += (char)cell->This;
         }
         return Ret;
     }
@@ -69,6 +97,7 @@ private:
         Value A;
         Value B;
         bool isCod = 1;
+        bool inValue=0;
         for (int i = 0; i < CodeSegm->size(); i++)
         {
             switch (CodeSegm->at(i))
@@ -78,6 +107,18 @@ private:
                 {
                     temp->push_back(i);
                 }
+                STOP /*case '&' : if (isCod && ((CodeSegm->at(i) != '<') || (CodeSegm->at(i) != '>')))
+                {
+                    cout<<"& require that the next char is '<' | '>'"<<endl;
+                    exit(1);
+                }
+                STOP case '%': if(isCod && ((CodeSegm->at(i) != '<') || (CodeSegm->at(i) != '>'))){
+                    if((!inValue)){
+                    cout<<"% require that the next char is '<' | '>'"<<endl;
+                    exit(1);
+                    }
+                }*/
+                inValue = (i != 0) ? (CodeSegm->at(i - 1) == '\\') ? inValue : !inValue : 0;
                 STOP case ']' : if (isCod)
                 {
                     A = temp->at(temp->size() - 1);
@@ -86,8 +127,7 @@ private:
                     (*VMap)[A] = B; //&&
                     (*VMap)[B] = A;
                 }
-                /* code */
-                STOP case '#' : isCod = (CodeSegm->at(i - 1) == '\\') ? isCod : !isCod;
+                STOP case '#' : isCod = (i != 0) ? (CodeSegm->at(i - 1) == '\\') ? isCod : !isCod : 0;
                 STOP default : STOP
             }
             CodeOrCom[i] = isCod;
@@ -97,8 +137,8 @@ private:
     int ReadConst(int i)
     {
         int Tempindex = index;
-        Cell *Noze = THISCELL;
-        Cell *temp = Noze;
+        DATASEGMPTR Noze = THISCELL;
+        DATASEGMPTR temp = Noze;
         i++;
         char direction = (*CodeSegm)[i];
         i++;
@@ -124,14 +164,14 @@ private:
         return ireplace;
     }
 
-    void printcell(Cell *T)
+    void printcell(DATASEGMPTR T)
     {
         if (PrintasMath)
-            cout << to_string((char)T->This);
+            cout << to_string(T->This);
         else
             cout << (char)T->This;
     }
-    void DebugPrintAllCells(Cell *head)
+    void DebugPrintAllCells(DATASEGMPTR head)
     {
         char sp = 0;
         while (head->LeftCell != nullptr)
@@ -143,20 +183,23 @@ private:
             else
                 sp = 0;
             if (head)
-                cout << sp << "[" << to_string((char)head->This) << " ( " << (char)head->This << " , " << head->Index << " )]," << sp;
+                cout << sp << "[(" << head->This << " , " << head->Index << " )]," << sp;
             head = head->RightCell;
         }
         cout << endl;
     }
 
 public:
-    // we whould add a map of Value to bool for comentary
+    void ShowHelp()
+    {
+    }
     void Execute()
     {
-        ofstream *K;
+        ios_base::openmode fmode;
+        fstream K = fstream("", ios::in | ios::out);
+        string File = "";
         for (Value i = 0; i < (CodeSegm->size()); i++)
         {
-            // cout<<i<<endl;
             if (CodeOrCom[i])
                 switch (CodeSegm->at(i))
                 {
@@ -171,7 +214,7 @@ public:
                     printcell(THISCELL);
                     STOP;
                 case ',':
-                    THISCELL->This = getchar();
+                    THISCELLVALUE = getchar();
                     STOP;
                 case '+':
                     THISCELLVALUE++;
@@ -179,7 +222,44 @@ public:
                 case '-':
                     THISCELLVALUE--;
                     STOP;
+                case '^':
+                    Go(++);
+                    STOP;
+                case 'V':
+                    Go(--);
+                    STOP;
+                case '$':
+                    system(ReadtoRight().c_str());
+                    STOP;
+                case ')':
+                    ReadtoLeft();
+                    STOP;
+                case '(':
+                    ReadtoRight();
+                    STOP;
+                case '@':
+                    SaveState;
+                    STOP;
+                case '&':
+                    File = (CodeSegm->at(i + 2) == '<') ? ReadtoLeft() : ReadtoRight();
+                    fmode = (CodeSegm->at(i + 1) == 'W') ? ios::out : ios::in;
+                    K.open(File, fmode);
+                    STOP;
+                case '?':
+                    THISCELLVALUE = (int)K.get();
+                    THISCELLVALUE = (-1 == THISCELLVALUE) ? 0 : THISCELLVALUE;
+                    STOP;
+                case '/':
+                    if (THISCELLVALUE)
+                        K << (char)THISCELLVALUE;
+                    else
+                        K << endl;
+                    STOP;
+                case ':':
+                    K.close();
+                    STOP;
                 case '*':
+                    //cout << THISCELLVALUE << endl;
                     THISCELLVALUE = THISCELLVALUE * THISCELLVALUE;
                     STOP;
                 case '0':
@@ -211,25 +291,27 @@ public:
                 }
         }
         cout << endl
-             << "Program ended with Value : " << to_string((char)THISCELLVALUE) << " at index : " << index << endl;
+             << "Program ended with Value : " << THISCELLVALUE << " at index : " << index << endl;
     }
-    ExtendedBrainfuckhehe(CODESEGMPTR code)
+    RelttFuck(CODESEGMPTR code)
     {
         VMap = new VMAP;
         temp = new TEMP;
+        DataSegmS_ = new DATASEGMPTRMAP;
         DataSegm = new DATASEGM;
         CodeSegm = code;
         INIT();
     }
-    ExtendedBrainfuckhehe(const char *code)
+    RelttFuck(const char *code)
     {
         VMap = new VMAP;
         temp = new TEMP;
+        DataSegmS_ = new DATASEGMPTRMAP;
         DataSegm = new DATASEGM;
         CodeSegm = new CODESEGM(code);
         INIT();
     }
-    ~ExtendedBrainfuckhehe()
+    ~RelttFuck()
     {
         delete this->CodeSegm;
         delete this->temp;
