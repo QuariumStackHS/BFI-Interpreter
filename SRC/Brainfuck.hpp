@@ -8,7 +8,10 @@
 [-] decr    √
 [+] incr    √
 EXT:
-[Ø] yes 0 is a keyword for.. setting to zero the pointed cell √ alt+shift+o= Ø
+[~] wait number of ms in cell
+[0] yes 0 is a keyword for.. setting to zero the pointed cell √ alt+shift+o= Ø
+["]Save *Cell to MATHCELL
+['] '(!<=>+ /\*-) ex: '< : MATHCELL
 [M] print as Math ints(ints being cellValue) √
 [S] print as String ints √
 [^] Save currentcell in map[Dataindex] then increment Dataindex and set currentcell to
@@ -16,9 +19,9 @@ EXT:
 [#]begin Commentary&end Commentary
 [%]( name direction set in name by first char(<>)) (Set Cells); exemple %<exemplename%
 [*]square nbr   √
-[)]go left until 0 alt + \ 
+[)]go left until 0 alt + \
 [(]go right until 0 alt+shift+ \
-[@]save state (for ^ & V) 
+[@]save state (for ^ & V)
 [&]open file( name direction set in name by first char(<>)) until value is 0 exemple @<@
 [$] bash command
 [?]read next char from file overwriting cell
@@ -29,7 +32,13 @@ EXT:
 */
 #define IFNOTNULL(A)
 #ifndef CODESEGMPTR
+//#define DEBUG
 #include "DataSegm.hpp"
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 class RelttFuck
 {
 private:
@@ -40,11 +49,12 @@ private:
     Value DATAindex = 0;
     DATASEGMPTRMAPPTR DataSegmS_;
     DATASEGMPTR DataSegm;
+    DATASEGMPTR MATHCELL;
     MAPINT2BOOL CodeOrCom;
 #define SaveState (*DataSegmS_)[DATAindex] = THISCELL
-#define Go(A) \
-    A DATAindex;\
-    SaveState = ((*DataSegmS_)[DATAindex] == nullptr) ? New_Cell() : (*DataSegmS_)[DATAindex];\
+#define Go(A)                                                                                  \
+    A DATAindex;                                                                               \
+    SaveState = ((*DataSegmS_)[DATAindex] == nullptr) ? New_Cell() : (*DataSegmS_)[DATAindex]; \
     index = THISCELL->Index;
     DATASEGMPTR Go_Left(DATASEGMPTR This)
     {
@@ -96,30 +106,40 @@ private:
     {
         Value A;
         Value B;
+        // string
         bool isCod = 1;
-        bool inValue=0;
+        bool inValue = 0;
+        bool inVName = 0;
+        string Vname;
         for (int i = 0; i < CodeSegm->size(); i++)
         {
             switch (CodeSegm->at(i))
             {
+            case '|':
+                inVName = (!inValue) && (isCod);
+                STOP;
             case '[':
                 if (isCod)
                 {
                     temp->push_back(i);
                 }
-                STOP /*case '&' : if (isCod && ((CodeSegm->at(i) != '<') || (CodeSegm->at(i) != '>')))
-                {
-                    cout<<"& require that the next char is '<' | '>'"<<endl;
-                    exit(1);
-                }
-                STOP case '%': if(isCod && ((CodeSegm->at(i) != '<') || (CodeSegm->at(i) != '>'))){
-                    if((!inValue)){
-                    cout<<"% require that the next char is '<' | '>'"<<endl;
-                    exit(1);
-                    }
-                }*/
-                inValue = (i != 0) ? (CodeSegm->at(i - 1) == '\\') ? inValue : !inValue : 0;
-                STOP case ']' : if (isCod)
+                // STOP
+                /*case '&' : if (isCod && ((CodeSegm->at(i) != '<') || (CodeSegm->at(i) != '>')))
+               {
+                   cout<<"& require that the next char is '<' | '>'"<<endl;
+                   exit(1);
+               }*/
+               STOP case '%':
+                if(isCod && !((CodeSegm->at(i+1) == '<') || (CodeSegm->at(i+1) == '>'))){
+                   if((!inValue)){
+                   cout<<"% require that the next char is '<' | '>' at"<<i<<endl;
+                   exit(1);
+                   }
+                   
+               }
+                inValue=!inValue;
+                
+                STOP; case ']' : if (isCod)
                 {
                     A = temp->at(temp->size() - 1);
                     B = i;
@@ -127,8 +147,10 @@ private:
                     (*VMap)[A] = B; //&&
                     (*VMap)[B] = A;
                 }
-                STOP case '#' : isCod = (i != 0) ? (CodeSegm->at(i - 1) == '\\') ? isCod : !isCod : 0;
-                STOP default : STOP
+                STOP; case '#' : isCod = (i != 0) ? Switchif('\\') ON(isCod) ELSE0;
+                STOP; default :
+
+                    STOP
             }
             CodeOrCom[i] = isCod;
         }
@@ -146,7 +168,10 @@ private:
         int jreplace = 0;
         for (int j = i; j < CodeSegm->size(); j++)
         {
-            if ((*CodeSegm)[j] == '%')
+            if ((*CodeSegm)[j] == '%' && (*CodeSegm)[j - 1] == '\\')
+            {
+            }
+            else if ((*CodeSegm)[j] == '%')
             {
                 jreplace = j;
                 j = CodeSegm->size();
@@ -195,6 +220,7 @@ public:
     }
     void Execute()
     {
+        string inbuff = "";
         ios_base::openmode fmode;
         fstream K = fstream("", ios::in | ios::out);
         string File = "";
@@ -229,10 +255,14 @@ public:
                     Go(--);
                     STOP;
                 case '$':
-                    system(ReadtoRight().c_str());
+                    THISCELLVALUE = system(ReadtoRight().c_str());
                     STOP;
                 case ')':
                     ReadtoLeft();
+                    STOP;
+                case 'G':
+                    cin >> inbuff;
+                    cout << inbuff << endl;
                     STOP;
                 case '(':
                     ReadtoRight();
@@ -255,11 +285,14 @@ public:
                     else
                         K << endl;
                     STOP;
+                case '~':
+                    sleep(THISCELLVALUE);
+                    STOP;
                 case ':':
                     K.close();
                     STOP;
                 case '*':
-                    //cout << THISCELLVALUE << endl;
+                    // cout << THISCELLVALUE << endl;
                     THISCELLVALUE = THISCELLVALUE * THISCELLVALUE;
                     STOP;
                 case '0':
@@ -290,8 +323,15 @@ public:
                     STOP
                 }
         }
-        cout << endl
-             << "Program ended with Value : " << THISCELLVALUE << " at index : " << index << endl;
+        #if defined(DEBUG)
+        
+        cout
+            << "Program ended with Value : " << THISCELLVALUE << " at index : " << index << endl;
+        
+        
+        #endif 
+        
+        
     }
     RelttFuck(CODESEGMPTR code)
     {
@@ -315,6 +355,8 @@ public:
     {
         delete this->CodeSegm;
         delete this->temp;
+        delete this->DataSegm;
+        delete this->DataSegmS_;
         delete this->VMap;
     }
 };

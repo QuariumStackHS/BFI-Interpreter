@@ -19,6 +19,9 @@ using namespace std;
 #define DATASEGMPTRMAP map<Value, DATASEGMPTR>
 #define DATASEGMPTRMAPPTR map<Value, DATASEGMPTR> *
 #define MAPINT2BOOL map<int, bool>
+#define Switchif(a) (CodeSegm->at(i - 1) == a)
+#define ON(var) ? var : !var
+#define ELSE0 :0;
 struct Cell
 {
     Cell *RightCell = nullptr;
