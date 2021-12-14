@@ -10,10 +10,11 @@
 EXT:
 [~] wait number of ms in cell
 [0] yes 0 is a keyword for.. setting to zero the pointed cell √ alt+shift+o= Ø
-["]Save *Cell to MATHCELL
+["]Save CELLVALUE to MATHCELLVALUE
+[_]Save MATHCELLVALUE to CELLVALUE
 [}]go to Right MATHCELL;
 [{]go to Left MATHCELL;
-['] '(!<=>+ /\*-) ex: '< : MATHCELL
+['] '(!<=>+/\*-) ex: '< : MATHCELL
 [M] print as Math ints(ints being cellValue) √
 [S] print as String ints √
 [^] Save currentcell in map[Dataindex] then increment Dataindex and set currentcell to
@@ -225,20 +226,31 @@ private:
         //cout << THISMATHCELLVALUE << " | " << THISCELLVALUE << endl;
         switch (CodeSegm->at(*K))
         {
-#define ITHINKITSBETTER(OP)                                            \
+#define THISCELLVSMATHCELL(OP)                                            \
     Go_Right(THISMATHCELL)->This = THISCELLVALUE OP THISMATHCELLVALUE; \
     break;
         case '+':
-            ITHINKITSBETTER(+);
+            THISCELLVSMATHCELL(+);
         case '-':
-            ITHINKITSBETTER(-);
+            THISCELLVSMATHCELL(-);
         case '/':
-            ITHINKITSBETTER(/);
+            THISCELLVSMATHCELL(/);
         case '*':
-            ITHINKITSBETTER(*);
-        case '\'':
-            THISCELLVALUE = THISMATHCELLVALUE;
-            break;
+            THISCELLVSMATHCELL(*);
+        case '>':
+            THISCELLVSMATHCELL(>);
+        case '<':
+            THISCELLVSMATHCELL(<);
+        case '&':
+            THISCELLVSMATHCELL(&&);
+        case '|':
+            THISCELLVSMATHCELL(||);
+        case '%':
+            THISCELLVSMATHCELL(%);
+        case '!':
+            THISCELLVSMATHCELL(!=);
+        case '=':
+            THISCELLVSMATHCELL(==);
         default:
             break;
         }
@@ -291,9 +303,8 @@ public:
                     ReadtoLeft();
                     THISCELL = LS;
                     STOP;
-                case 'G':
-                    cin >> inbuff;
-                    cout << inbuff << endl;
+                case '_':
+                    THISCELLVALUE=THISMATHCELLVALUE;
                     STOP;
                 case '(':
                     ReadtoRight();

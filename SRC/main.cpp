@@ -20,7 +20,7 @@ int main(int argc, char **argv)
         static std::__1::chrono::steady_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> POSTINITMSTIME = t2 - t1;
         cout.precision(10);
-        cout << "Took " << POSTINITMSTIME.count() / 1000 << "Second(s) To Execute" << endl;
+        cout << "Took " << POSTINITMSTIME.count() / 1000 << " Second(s) To Execute" << endl;
     }
     else
     {
