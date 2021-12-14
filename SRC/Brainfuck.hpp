@@ -11,6 +11,8 @@ EXT:
 [~] wait number of ms in cell
 [0] yes 0 is a keyword for.. setting to zero the pointed cell √ alt+shift+o= Ø
 ["]Save *Cell to MATHCELL
+[}]go to Right MATHCELL;
+[{]go to Left MATHCELL;
 ['] '(!<=>+ /\*-) ex: '< : MATHCELL
 [M] print as Math ints(ints being cellValue) √
 [S] print as String ints √
@@ -23,12 +25,13 @@ EXT:
 [(]go right until 0 alt+shift+ \
 [@]save state (for ^ & V)
 [&]open file( name direction set in name by first char(<>)) until value is 0 exemple @<@
-[$] bash command
+[$]bash command
 [?]read next char from file overwriting cell
 [/]write char to file
 [:]close file
 [!]print all cell
 [;]exit program
+please concider that this code is a complete fuck to Programmer who would try to understand it
 */
 #define IFNOTNULL(A)
 #ifndef CODESEGMPTR
@@ -50,12 +53,15 @@ private:
     DATASEGMPTRMAPPTR DataSegmS_;
     DATASEGMPTR DataSegm;
     DATASEGMPTR MATHCELL;
+#define THISMATHCELL MATHCELL
+#define THISMATHCELLVALUE MATHCELL->This
     MAPINT2BOOL CodeOrCom;
 #define SaveState (*DataSegmS_)[DATAindex] = THISCELL
 #define Go(A)                                                                                  \
     A DATAindex;                                                                               \
     SaveState = ((*DataSegmS_)[DATAindex] == nullptr) ? New_Cell() : (*DataSegmS_)[DATAindex]; \
     index = THISCELL->Index;
+    DATASEGMPTR LS;
     DATASEGMPTR Go_Left(DATASEGMPTR This)
     {
         index--;
@@ -66,6 +72,7 @@ private:
             cell->Index = index;
             Link(cell, This);
         }
+        LS = cell;
         return cell;
     }
     DATASEGMPTR Go_Right(DATASEGMPTR This)
@@ -78,6 +85,7 @@ private:
             cell->Index = index;
             Link(This, cell);
         }
+        LS = cell;
         return cell;
     }
     string ReadtoRight()
@@ -106,7 +114,6 @@ private:
     {
         Value A;
         Value B;
-        // string
         bool isCod = 1;
         bool inValue = 0;
         bool inVName = 0;
@@ -123,23 +130,19 @@ private:
                 {
                     temp->push_back(i);
                 }
-                // STOP
-                /*case '&' : if (isCod && ((CodeSegm->at(i) != '<') || (CodeSegm->at(i) != '>')))
-               {
-                   cout<<"& require that the next char is '<' | '>'"<<endl;
-                   exit(1);
-               }*/
-               STOP case '%':
-                if(isCod && !((CodeSegm->at(i+1) == '<') || (CodeSegm->at(i+1) == '>'))){
-                   if((!inValue)){
-                   cout<<"% require that the next char is '<' | '>' at"<<i<<endl;
-                   exit(1);
-                   }
-                   
-               }
-                inValue=!inValue;
-                
-                STOP; case ']' : if (isCod)
+                STOP case '%' : if (isCod && !((CodeSegm->at(i + 1) == '<') || (CodeSegm->at(i + 1) == '>')))
+                {
+                    if ((!inValue))
+                    {
+                        cout << "% require that the next char is '<' | '>' at" << i << endl;
+                        exit(1);
+                    }
+                }
+                inValue = !inValue;
+
+                STOP;
+            case ']':
+                if (isCod)
                 {
                     A = temp->at(temp->size() - 1);
                     B = i;
@@ -147,10 +150,13 @@ private:
                     (*VMap)[A] = B; //&&
                     (*VMap)[B] = A;
                 }
-                STOP; case '#' : isCod = (i != 0) ? Switchif('\\') ON(isCod) ELSE0;
-                STOP; default :
+                STOP;
+            case '#':
+                isCod = (i != 0) ? Switchif('\\') ON(isCod) ELSE0;
+                STOP;
+            default:
 
-                    STOP
+                STOP
             }
             CodeOrCom[i] = isCod;
         }
@@ -213,6 +219,30 @@ private:
         }
         cout << endl;
     }
+    void PerformMath(int *K)
+    {
+        ++*K;
+        //cout << THISMATHCELLVALUE << " | " << THISCELLVALUE << endl;
+        switch (CodeSegm->at(*K))
+        {
+#define ITHINKITSBETTER(OP)                                            \
+    Go_Right(THISMATHCELL)->This = THISCELLVALUE OP THISMATHCELLVALUE; \
+    break;
+        case '+':
+            ITHINKITSBETTER(+);
+        case '-':
+            ITHINKITSBETTER(-);
+        case '/':
+            ITHINKITSBETTER(/);
+        case '*':
+            ITHINKITSBETTER(*);
+        case '\'':
+            THISCELLVALUE = THISMATHCELLVALUE;
+            break;
+        default:
+            break;
+        }
+    }
 
 public:
     void ShowHelp()
@@ -259,6 +289,7 @@ public:
                     STOP;
                 case ')':
                     ReadtoLeft();
+                    THISCELL = LS;
                     STOP;
                 case 'G':
                     cin >> inbuff;
@@ -266,6 +297,7 @@ public:
                     STOP;
                 case '(':
                     ReadtoRight();
+                    THISCELL = LS;
                     STOP;
                 case '@':
                     SaveState;
@@ -319,25 +351,35 @@ public:
                 case '!':
                     DebugPrintAllCells(THISCELL);
                     STOP;
+                case '"':
+                    THISMATHCELLVALUE = THISCELLVALUE;
+                    STOP;
+                case '}':
+                    THISMATHCELL = Go_Right(THISMATHCELL);
+                    STOP;
+                case '{':
+                    THISMATHCELL = Go_Left(THISMATHCELL);
+                    STOP;
+                case '\'':
+                    PerformMath(&i);
+                    STOP;
                 default:
                     STOP
                 }
         }
-        #if defined(DEBUG)
-        
+#if defined(DEBUG)
+
         cout
             << "Program ended with Value : " << THISCELLVALUE << " at index : " << index << endl;
-        
-        
-        #endif 
-        
-        
+
+#endif
     }
     RelttFuck(CODESEGMPTR code)
     {
         VMap = new VMAP;
         temp = new TEMP;
         DataSegmS_ = new DATASEGMPTRMAP;
+        MATHCELL = new DATASEGM;
         DataSegm = new DATASEGM;
         CodeSegm = code;
         INIT();
@@ -346,6 +388,7 @@ public:
     {
         VMap = new VMAP;
         temp = new TEMP;
+        MATHCELL = new DATASEGM;
         DataSegmS_ = new DATASEGMPTRMAP;
         DataSegm = new DATASEGM;
         CodeSegm = new CODESEGM(code);
