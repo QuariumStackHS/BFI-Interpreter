@@ -37,6 +37,7 @@ please concider that this code is a complete fuck to Programmer who would try to
 #define IFNOTNULL(A)
 #ifndef CODESEGMPTR
 //#define DEBUG
+#define SOCKET
 #include "DataSegm.hpp"
 #ifdef _WIN32
 #include <Windows.h>
@@ -223,10 +224,10 @@ private:
     void PerformMath(int *K)
     {
         ++*K;
-        //cout << THISMATHCELLVALUE << " | " << THISCELLVALUE << endl;
+        // cout << THISMATHCELLVALUE << " | " << THISCELLVALUE << endl;
         switch (CodeSegm->at(*K))
         {
-#define THISCELLVSMATHCELL(OP)                                            \
+#define THISCELLVSMATHCELL(OP)                                         \
     Go_Right(THISMATHCELL)->This = THISCELLVALUE OP THISMATHCELLVALUE; \
     break;
         case '+':
@@ -304,7 +305,7 @@ public:
                     THISCELL = LS;
                     STOP;
                 case '_':
-                    THISCELLVALUE=THISMATHCELLVALUE;
+                    THISCELLVALUE = THISMATHCELLVALUE;
                     STOP;
                 case '(':
                     ReadtoRight();
@@ -374,6 +375,21 @@ public:
                 case '\'':
                     PerformMath(&i);
                     STOP;
+#if defined(SOCKET)
+                case 'O':
+                    // open socket read ip >
+                    STOP;
+                case 'P':
+                    // put what is to right in socket to the interet
+                    STOP;
+                case 'I':
+                    // input from connection to the
+                    STOP;
+#endif
+                case ' ':
+                    cout<<"Space ERROR you can't have a ' ' in the code! come on!"<<endl;
+                    exit(0);
+                    STOP;
                 default:
                     STOP
                 }
@@ -406,7 +422,12 @@ public:
         INIT();
     }
     ~RelttFuck()
-    {
+    {DATASEGMPTRMAP::iterator it;
+        for (it = DataSegmS_->begin(); it != DataSegmS_->end(); it++)
+        {
+            Delete_Cell_SAFFLY(it->second);
+        }//*/
+        //Delete_Cell_SAFFLY(THISCELL)
         delete this->CodeSegm;
         delete this->temp;
         delete this->DataSegm;

@@ -14,7 +14,7 @@ using namespace std;
 #define CODESEGMPTR CODESEGM *
 #define DATASEGMPTR DATASEGM *
 #define THISCELL DataSegm
-#define THISCELLPTR DataSegm*
+#define THISCELLPTR DataSegm *
 #define THISCELLVALUE THISCELL->This
 #define DATASEGMPTRMAP map<Value, DATASEGMPTR>
 #define DATASEGMPTRMAPPTR map<Value, DATASEGMPTR> *
@@ -32,6 +32,20 @@ struct Cell
 Cell *New_Cell()
 {
     return new Cell;
+}
+void Delete_Cell_SAFFLY(Cell *C)
+{
+#define ReCycle(CellC)                    \
+    if (CellC)                     \
+    {                                     \
+        Delete_Cell_SAFFLY(CellC); \
+        delete CellC;              \
+    }
+    if (C)
+    {
+        //ReCycle(C->RightCell);
+        //ReCycle(C->LeftCell);
+    }
 }
 void Link(Cell *left, Cell *Right)
 {
