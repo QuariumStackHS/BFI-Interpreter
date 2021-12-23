@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cstring>
 using namespace std;
 #define Value int
 #define VMAP map<Value, Value>

@@ -35,14 +35,16 @@ void Help()
     List->push_back(SET('}', "Go To the Right on this Math Cell"));
     List->push_back(SET('{', "Go To the Left on this Math Cell"));
     List->push_back(SET('\'', "Require 1 argument and it is the operator, Right Cell of MathCell = THISCELLVALUE operator THISMATHCELL (a list of operator is: +,-,/,*,<,>,&,|,%,!,=;)"));
-    cout<<YELLOW<<"-->"<<GREEN<<" Cell is use here to describe a structure with one Left Cell, Right Cell and an int so it can move < or >\n";
-    cout<<"    there is a Map of int to Cell pointer that can be use to go \"up\" set the entry of the 'Level' and come back to that state later"<<endl;
-    for(int i =0;i<List->size();i++)
-        cout <<RED<<i<<YELLOW<< "--> "<<GREEN << List->at(i)->c <<RESET<<" | "<<BOLDCYAN << List->at(i)->Desc <<RESET<< endl;
+    cout << YELLOW << "-->" << GREEN << " Cell is use here to describe a structure with one Left Cell, Right Cell and an int so it can move < or >\n";
+    cout << "    there is a Map of int to Cell pointer that can be use to go \"up\" set the entry of the 'Level' and come back to that state later" << endl;
+    for (int i = 0; i < List->size(); i++)
+        cout << RED << i << YELLOW << "--> " << GREEN << List->at(i)->c << RESET << " | " << BOLDCYAN << List->at(i)->Desc << RESET << endl;
 }
-void ONELINE(CODESEGMPTR Code){
-    for(int i=0;i<Code->size();i++)if(Code->at(i)=='\n')
-        Code->erase(i,1);
+void ONELINE(CODESEGMPTR Code)
+{
+    for (int i = 0; i < Code->size(); i++)
+        if (Code->at(i) == '\n')
+            Code->erase(i, 1);
 }
 int main(int argc, char **argv)
 {
@@ -51,25 +53,27 @@ int main(int argc, char **argv)
 
     else if (argc >= 2)
     {
-
-        static std::__1::chrono::steady_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+#ifdef __APPLE__ || __MACH__  
+static std::__1::chrono::steady_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+#endif
         ifstream File(argv[1]);
         stringstream ss;
         ss << File.rdbuf();
         string CD = ss.str();
         CODESEGMPTR Code = new CODESEGM(CD);
         RelttFuck *BF = new RelttFuck(Code);
-        static std::__1::chrono::steady_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+#ifdef __APPLE__ || __MACH__  static std::__1::chrono::steady_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> POSTINITMSTIME = t2 - t1;
-        
+#endif
         BF->Execute();
-        
+
         //cout<<*Code<<endl;
         delete BF;
-        static std::__1::chrono::steady_clock::time_point t3 = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> POSTINITMSTIME2 = t3 - t2;
+#ifdef __APPLE__ || __MACH__  static std::__1::chrono::steady_clock::time_point t3 = std::chrono::high_resolution_clock::now();
+# __APPLE__ || __MACH__  std::chrono::duration <double, std::milli> POSTINITMSTIME2 = t3 - t2;
         cout.precision(6);
         cout << "Took " << POSTINITMSTIME2.count() / 1000 << " Second(s) To Execute && " << POSTINITMSTIME.count() << "Ms for PreExecution" << endl;
+#endif
     }
     else
     {
