@@ -1,1 +1,3 @@
-@^+++*+@V%>exec > log.Reltt.txt 2>&1 & g++ -std=c++17 SRC/main.cpp -o RFI -w >> Log%$'=}_[S%<NO ERROR!%[<.]^.V;]%>Log%&>S[?.]:S%<ERROR!%[<.]^.V;
+#This file is a Sh script and RFI script at the same time bruh#@^+++*+@V%>
+g++ -std=c++17 SRC/main.cpp -o RFI -w >> Log
+##%$'=}_[S%<NO ERROR!%[<.]^.V;]%>Log%&>S[?.]:S%<ERROR!%[<.]^.V;
