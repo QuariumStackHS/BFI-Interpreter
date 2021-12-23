@@ -1,39 +1,5 @@
-/*
-[.]cout     √
-[,]cin      √
-[<]left     √
-[>]right    √
-['['] begin while Cell!=0   √
-[']'] end while Cell==0     √
-[-] decr    √
-[+] incr    √
-EXT:
-[~] wait number of ms in cell
-[0] yes 0 is a keyword for.. setting to zero the pointed cell √ alt+shift+o= Ø
-["]Save CELLVALUE to MATHCELLVALUE
-[_]Save MATHCELLVALUE to CELLVALUE
-[}]go to Right MATHCELL;
-[{]go to Left MATHCELL;
-['] '(!<=>+/\*-) ex: '< : MATHCELL
-[M] print as Math ints(ints being cellValue) √
-[S] print as String ints √
-[^] Save currentcell in map[Dataindex] then increment Dataindex and set currentcell to
-[V] Save currentcell in map[Dataindex] then decrement Dataindex and set currentcell to
-[#]begin Commentary&end Commentary
-[%]( name direction set in name by first char(<>)) (Set Cells); exemple %<exemplename%
-[*]square nbr   √
-[)]go left until 0 alt + \
-[(]go right until 0 alt+shift+ \
-[@]save state (for ^ & V)
-[&]open file( name direction set in name by first char(<>)) until value is 0 exemple @<@
-[$]bash command
-[?]read next char from file overwriting cell
-[/]write char to file
-[:]close file
-[!]print all cell
-[;]exit program
-please concider that this code is a complete fuck to Programmer who would try to understand it
-*/
+
+#define SET(C, D) newHelpByChar(C, D)
 #define IFNOTNULL(A)
 #ifndef CODESEGMPTR
 //#define DEBUG
@@ -44,6 +10,18 @@ please concider that this code is a complete fuck to Programmer who would try to
 #else
 #include <unistd.h>
 #endif
+struct HelpByChar
+{
+    char c;
+    string Desc;
+};
+HelpByChar *newHelpByChar(char c, string Desc)
+{
+    HelpByChar *P = new HelpByChar();
+    P->c = c;
+    P->Desc = Desc;
+    return P;
+}
 class RelttFuck
 {
 private:
@@ -58,9 +36,11 @@ private:
 #define THISMATHCELL MATHCELL
 #define THISMATHCELLVALUE MATHCELL->This
     MAPINT2BOOL CodeOrCom;
+    MAPINT2INT LINEATCHARIND;
 #define SaveState (*DataSegmS_)[DATAindex] = THISCELL
 #define Go(A)                                                                                  \
-    A DATAindex;                                                                               \
+    A DATAindex; /*Flaw here*/                                                                 \
+    \ 
     SaveState = ((*DataSegmS_)[DATAindex] == nullptr) ? New_Cell() : (*DataSegmS_)[DATAindex]; \
     index = THISCELL->Index;
     DATASEGMPTR LS;
@@ -119,29 +99,35 @@ private:
         bool isCod = 1;
         bool inValue = 0;
         bool inVName = 0;
-        string Vname;
+        int errors=0;
+        string Vname = "";
+        string Vcode="";
+        int LINENBR=0;
+        LINEATCHARIND = map<int, int>();
         for (int i = 0; i < CodeSegm->size(); i++)
         {
+            LINEATCHARIND[i] = LINENBR;
+            Vcode+=CodeSegm->at(i);
             switch (CodeSegm->at(i))
             {
-            case '|':
+            /*case '|':
+                if(inVName)
                 inVName = (!inValue) && (isCod);
-                STOP;
+                STOP;*/
             case '[':
                 if (isCod)
-                {
                     temp->push_back(i);
-                }
+
                 STOP case '%' : if (isCod && !((CodeSegm->at(i + 1) == '<') || (CodeSegm->at(i + 1) == '>')))
                 {
                     if ((!inValue))
                     {
-                        cout << "% require that the next char is '<' | '>' at" << i << endl;
-                        exit(1);
+                        cout <<RED<< "% require that the next char is '<' | '>' at line: "<<endl<<BLUE << LINEATCHARIND[i]+1<<RESET;
+                        cout<<Vcode<<RED<<CodeSegm->at(i+1)<<" <-- use ('<' '>')!"<<RESET<<endl;
+                        errors++;
                     }
                 }
                 inValue = !inValue;
-
                 STOP;
             case ']':
                 if (isCod)
@@ -156,12 +142,18 @@ private:
             case '#':
                 isCod = (i != 0) ? Switchif('\\') ON(isCod) ELSE0;
                 STOP;
+            case '\n':
+            Vcode="";
+                LINENBR++;
+                STOP;
             default:
-
+                if (inVName)
+                    Vname += CodeSegm->at(i);
                 STOP
             }
             CodeOrCom[i] = isCod;
         }
+        if(errors>=1)exit(1);
     }
     bool PrintasMath = 0;
     int ReadConst(int i)
@@ -300,16 +292,8 @@ public:
                 case '$':
                     THISCELLVALUE = system(ReadtoRight().c_str());
                     STOP;
-                case ')':
-                    ReadtoLeft();
-                    THISCELL = LS;
-                    STOP;
                 case '_':
                     THISCELLVALUE = THISMATHCELLVALUE;
-                    STOP;
-                case '(':
-                    ReadtoRight();
-                    THISCELL = LS;
                     STOP;
                 case '@':
                     SaveState;
@@ -387,7 +371,7 @@ public:
                     STOP;
 #endif
                 case ' ':
-                    cout<<"Space ERROR you can't have a ' ' in the code! come on!"<<endl;
+                    cout << "Space ERROR you can't have a ' ' in the code! come on!" << endl;
                     exit(0);
                     STOP;
                 default:
@@ -422,12 +406,13 @@ public:
         INIT();
     }
     ~RelttFuck()
-    {DATASEGMPTRMAP::iterator it;
+    {
+        DATASEGMPTRMAP::iterator it;
         for (it = DataSegmS_->begin(); it != DataSegmS_->end(); it++)
         {
             Delete_Cell_SAFFLY(it->second);
-        }//*/
-        //Delete_Cell_SAFFLY(THISCELL)
+        } //*/
+        // Delete_Cell_SAFFLY(THISCELL)
         delete this->CodeSegm;
         delete this->temp;
         delete this->DataSegm;
