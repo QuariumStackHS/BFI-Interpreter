@@ -103,6 +103,8 @@ private:
     DATASEGMPTRMAPPTR DataSegmS_;
     DATASEGMPTR DataSegm;
     DATASEGMPTR MATHCELL;
+    map<string, int> Definition = map<string, int>();
+    vector<int> StackRun = vector<int>();
 #define THISMATHCELL MATHCELL
 #define THISMATHCELLVALUE MATHCELL->This
     MAPINT2BOOL CodeOrCom;
@@ -180,10 +182,15 @@ private:
             Vcode += CodeSegm->at(i);
             switch (CodeSegm->at(i))
             {
-            /*case '|':
-                if(inVName)
-                inVName = (!inValue) && (isCod);
-                STOP;*/
+            case '|':
+                if (inVName)
+                {
+                    this->Definition[Vname] = i + 1;
+                    //exit(0);
+                    Vname = "";
+                }
+                inVName = (!inVName);
+                STOP;
             case '[':
                 if (isCod)
                     temp->push_back(i);
@@ -328,11 +335,15 @@ public:
     void Execute()
     {
         string inbuff = "";
+        string temp="";
         ios_base::openmode fmode;
         fstream K = fstream("", ios::in | ios::out);
         string File = "";
+        bool isfnc = 0;
         for (Value i = 0; i < (CodeSegm->size()); i++)
         {
+            isfnc=(CodeSegm->at(i)==')')?0:isfnc;
+            if(!isfnc)
             if (CodeOrCom[i])
                 switch (CodeSegm->at(i))
                 {
@@ -369,6 +380,30 @@ public:
                     STOP;
                 case '@':
                     SaveState;
+                    STOP;
+                case '(':
+                    isfnc = 1;
+                    STOP;
+                case ')':
+                    isfnc = 0;
+                    STOP;
+                case '=':
+                    StackRun.push_back(i + 1);
+                    temp=(CodeSegm->at(i + 1) == '<') ? ReadtoLeft() : ReadtoRight();
+                    temp.pop_back();
+                    i = Definition[temp]+1;
+                    //cout<<i<<" | "<<temp.size()<<endl;
+                    STOP;
+                case ';':
+                    //cout<< (StackRun.size()>0)<<endl;
+                    if(StackRun.size()>0){
+                    i=StackRun[StackRun.size()-1];
+                    //cout<<i<<endl;
+                    StackRun.pop_back();
+                    }
+                    else{
+                    i = CodeSegm->size();
+                    }
                     STOP;
                 case '&':
                     File = (CodeSegm->at(i + 2) == '<') ? ReadtoLeft() : ReadtoRight();
@@ -413,9 +448,6 @@ public:
                 case '%':
                     i = ReadConst(i);
                     STOP;
-                case ';':
-                    i = CodeSegm->size();
-                    STOP;
                 case '!':
                     DebugPrintAllCells(THISCELL);
                     STOP;
@@ -443,8 +475,8 @@ public:
                     STOP;
 #endif
                 case ' ':
-                    cout << "Space ERROR you can't have a ' ' in the code! come on!" << endl;
-                    exit(0);
+                    //cout << "Space ERROR you can't have a ' ' in the code! come on!" << endl;
+                    //exit(0);
                     STOP;
                 default:
                     STOP
@@ -482,7 +514,7 @@ public:
         DATASEGMPTRMAP::iterator it;
         for (it = DataSegmS_->begin(); it != DataSegmS_->end(); it++)
         {
-            //Delete_Cell_SAFFLY(it->second);
+            // Delete_Cell_SAFFLY(it->second);
         } //*/
         // Delete_Cell_SAFFLY(THISCELL)
         delete this->CodeSegm;
