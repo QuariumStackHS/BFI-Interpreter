@@ -1,4 +1,1 @@
-|Func|(
-%>"Hello,World"%[0>.]+++*+.;
-)
-%>Func%=>;
+%>_Main%=>;|_Main|(|Enter|(0+++*+.;)%>"Hello,World"%[0>.]%>Enter%=>;)

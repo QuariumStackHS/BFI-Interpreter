@@ -35,6 +35,7 @@ void Help()
     List->push_back(SET('}', "Go To the Right on this Math Cell"));
     List->push_back(SET('{', "Go To the Left on this Math Cell"));
     List->push_back(SET('\'', "Require 1 argument and it is the operator, Right Cell of MathCell = THISCELLVALUE operator THISMATHCELL (a list of operator is: +,-,/,*,<,>,&,|,%,!,=;)"));
+    List->push_back(SET('=', "Require 1 argument and it is the Direction, run macro defined (See Macro file as exemple)"));
     cout << YELLOW << "-->" << GREEN << " Cell is use here to describe a structure with one Left Cell, Right Cell and an int so it can move < or >\n";
     cout << "    there is a Map of int to Cell pointer that can be use to go \"up\" set the entry of the 'Level' and come back to that state later" << endl;
     for (int i = 0; i < List->size(); i++)

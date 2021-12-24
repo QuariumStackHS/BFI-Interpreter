@@ -185,12 +185,20 @@ private:
             case '|':
                 if (inVName)
                 {
-                    this->Definition[Vname] = i + 1;
+                    this->Definition[Vname] = i ;
                     //exit(0);
                     Vname = "";
                 }
                 inVName = (!inVName);
                 STOP;
+            case '(':
+                if(isCod&&!inValue&&(CodeSegm->at(i-1)!='|')){
+                        cout << RED << "( require that the Previous char is '|' at line: " << endl
+                             << BLUE << LINEATCHARIND[i] + 1 << RESET;
+                        cout << Vcode << RED << CodeSegm->at(i + 1) << " <-- use ('<' '>')!" << RESET << endl;
+                        errors++;
+                }
+            STOP;
             case '[':
                 if (isCod)
                     temp->push_back(i);
@@ -348,6 +356,9 @@ public:
                 switch (CodeSegm->at(i))
                 {
                     ;
+                case '|':
+                    isfnc=1;
+                    STOP;
                 case '<':
                     THISCELL = Go_Left(THISCELL);
                     STOP;
@@ -392,7 +403,10 @@ public:
                     temp=(CodeSegm->at(i + 1) == '<') ? ReadtoLeft() : ReadtoRight();
                     temp.pop_back();
                     i = Definition[temp]+1;
-                    //cout<<i<<" | "<<temp.size()<<endl;
+                    if(i==1){
+                        i=CodeSegm->size();
+                        cout<<RED<<"Error Unkown Macro : "<<YELLOW<<temp<<RESET<<endl;}
+                    temp="";
                     STOP;
                 case ';':
                     //cout<< (StackRun.size()>0)<<endl;
