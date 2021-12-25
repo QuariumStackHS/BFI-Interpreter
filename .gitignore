@@ -26,8 +26,9 @@
 *.a
 *.lib
 */Log
-VM/*
 # Executables
 *.exe
 *.out
 *.app
+#Scrap
+.DS_Store

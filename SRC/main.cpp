@@ -56,6 +56,8 @@ int main(int argc, char **argv)
     {
 #ifdef __APPLE__ || __MACH__
         static std::__1::chrono::steady_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+#else
+        time_t t1 = time(0);
 #endif
         ifstream File(argv[1]);
         stringstream ss;
@@ -66,6 +68,9 @@ int main(int argc, char **argv)
 #ifdef __APPLE__ || __MACH__
         static std::__1::chrono::steady_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> POSTINITMSTIME = t2 - t1;
+#else
+        time_t t2 = time(0);
+        time_t InitTime =t2-t1;
 #endif
         BF->Execute();
 
@@ -76,6 +81,10 @@ int main(int argc, char **argv)
         std::chrono::duration<double, std::milli> POSTINITMSTIME2 = t3 - t2;
         cout.precision(6);
         cout << "Took " << POSTINITMSTIME2.count() / 1000 << " Second(s) To Execute && " << POSTINITMSTIME.count() << "Ms for PreExecution" << endl;
+#else
+        time_t t3 = time(0);
+        time_t PostInitTime =t3-t2;
+        cout << "Took " << PostInitTime << " Second(s) To Execute" << endl;
 #endif
     }
     else
