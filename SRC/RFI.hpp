@@ -185,25 +185,28 @@ private:
             case '|':
                 if (inVName)
                 {
-                    this->Definition[Vname] = i ;
-                    //exit(0);
+                    this->Definition[Vname] = i;
+                    // exit(0);
                     Vname = "";
                 }
                 inVName = (!inVName);
                 STOP;
             case '(':
-                if(isCod&&!inValue&&(CodeSegm->at(i-1)!='|')){
-                        cout << RED << "( require that the Previous char is '|' at line: " << endl
-                             << BLUE << LINEATCHARIND[i] + 1 << RESET;
-                        cout << Vcode << RED << CodeSegm->at(i + 1) << " <-- use ('<' '>')!" << RESET << endl;
-                        errors++;
+                if (isCod && !inValue && (CodeSegm->at(i - 1) != '|'))
+                {
+                    cout << RED << "( require that the Previous char is '|' at line: " << endl
+                         << BLUE << LINEATCHARIND[i] + 1 << RESET;
+                    cout << Vcode << RED << CodeSegm->at(i + 1) << " <-- use ('<' '>')!" << RESET << endl;
+                    errors++;
                 }
-            STOP;
+                STOP;
             case '[':
                 if (isCod)
                     temp->push_back(i);
 
-                STOP case '%' : if (isCod && !((CodeSegm->at(i + 1) == '<') || (CodeSegm->at(i + 1) == '>')))
+                STOP;
+            case '%':
+                if (isCod && !((CodeSegm->at(i + 1) == '<') || (CodeSegm->at(i + 1) == '>')))
                 {
                     if ((!inValue))
                     {
@@ -343,158 +346,162 @@ public:
     void Execute()
     {
         string inbuff = "";
-        string temp="";
+        string temp = "";
         ios_base::openmode fmode;
         fstream K = fstream("", ios::in | ios::out);
         string File = "";
         bool isfnc = 0;
         for (Value i = 0; i < (CodeSegm->size()); i++)
         {
-            isfnc=(CodeSegm->at(i)==')')?0:isfnc;
-            if(!isfnc)
-            if (CodeOrCom[i])
-                switch (CodeSegm->at(i))
-                {
-                    ;
-                case '|':
-                    isfnc=1;
-                    STOP;
-                case '<':
-                    THISCELL = Go_Left(THISCELL);
-                    STOP;
-                case '>':
-                    THISCELL = Go_Right(THISCELL);
-                    STOP;
-                case '.':
-                    printcell(THISCELL);
-                    STOP;
-                case ',':
-                    THISCELLVALUE = getchar();
-                    STOP;
-                case '+':
-                    THISCELLVALUE++;
-                    STOP;
-                case '-':
-                    THISCELLVALUE--;
-                    STOP;
-                case '^':
-                    Go(++);
-                    STOP;
-                case 'V':
-                    Go(--);
-                    STOP;
-                case '$':
-                    THISCELLVALUE = system(ReadtoRight().c_str());
-                    STOP;
-                case '_':
-                    THISCELLVALUE = THISMATHCELLVALUE;
-                    STOP;
-                case '@':
-                    SaveState;
-                    STOP;
-                case '(':
-                    isfnc = 1;
-                    STOP;
-                case ')':
-                    isfnc = 0;
-                    STOP;
-                case '=':
-                    StackRun.push_back(i + 1);
-                    temp=(CodeSegm->at(i + 1) == '<') ? ReadtoLeft() : ReadtoRight();
-                    temp.pop_back();
-                    i = Definition[temp]+1;
-                    if(i==1){
-                        i=CodeSegm->size();
-                        cout<<RED<<"Error Unkown Macro : "<<YELLOW<<temp<<RESET<<endl;}
-                    temp="";
-                    STOP;
-                case ';':
-                    //cout<< (StackRun.size()>0)<<endl;
-                    if(StackRun.size()>0){
-                    i=StackRun[StackRun.size()-1];
-                    //cout<<i<<endl;
-                    StackRun.pop_back();
-                    }
-                    else{
-                    i = CodeSegm->size();
-                    }
-                    STOP;
-                case '&':
-                    File = (CodeSegm->at(i + 2) == '<') ? ReadtoLeft() : ReadtoRight();
-                    fmode = (CodeSegm->at(i + 1) == 'W') ? ios::out : ios::in;
-                    K.open(File, fmode);
-                    STOP;
-                case '?':
-                    THISCELLVALUE = (int)K.get();
-                    THISCELLVALUE = (-1 == THISCELLVALUE) ? 0 : THISCELLVALUE;
-                    STOP;
-                case '/':
-                    if (THISCELLVALUE)
-                        K << (char)THISCELLVALUE;
-                    else
-                        K << endl;
-                    STOP;
-                case '~':
-                    sleep(THISCELLVALUE);
-                    STOP;
-                case ':':
-                    K.close();
-                    STOP;
-                case '*':
-                    // cout << THISCELLVALUE << endl;
-                    THISCELLVALUE = THISCELLVALUE * THISCELLVALUE;
-                    STOP;
-                case '0':
-                    THISCELLVALUE = 0;
-                    STOP;
-                case '[':
-                    i = (THISCELLVALUE != 0) ? i : (*VMap)[i];
-                    STOP;
-                case ']':
-                    i = (THISCELLVALUE != 0) ? (*VMap)[i] : i;
-                    STOP;
-                case 'M':
-                    PrintasMath = 1;
-                    STOP;
-                case 'S':
-                    PrintasMath = 0;
-                    STOP;
-                case '%':
-                    i = ReadConst(i);
-                    STOP;
-                case '!':
-                    DebugPrintAllCells(THISCELL);
-                    STOP;
-                case '"':
-                    THISMATHCELLVALUE = THISCELLVALUE;
-                    STOP;
-                case '}':
-                    THISMATHCELL = Go_Right(THISMATHCELL);
-                    STOP;
-                case '{':
-                    THISMATHCELL = Go_Left(THISMATHCELL);
-                    STOP;
-                case '\'':
-                    PerformMath(&i);
-                    STOP;
+            isfnc = (CodeSegm->at(i) == ')') ? 0 : isfnc;
+            if (!isfnc)
+                if (CodeOrCom[i])
+                    switch (CodeSegm->at(i))
+                    {
+                        ;
+                    case '|':
+                        isfnc = 1;
+                        STOP;
+                    case '<':
+                        THISCELL = Go_Left(THISCELL);
+                        STOP;
+                    case '>':
+                        THISCELL = Go_Right(THISCELL);
+                        STOP;
+                    case '.':
+                        printcell(THISCELL);
+                        STOP;
+                    case ',':
+                        THISCELLVALUE = getchar();
+                        STOP;
+                    case '+':
+                        THISCELLVALUE++;
+                        STOP;
+                    case '-':
+                        THISCELLVALUE--;
+                        STOP;
+                    case '^':
+                        Go(++);
+                        STOP;
+                    case 'V':
+                        Go(--);
+                        STOP;
+                    case '$':
+                        THISCELLVALUE = system(ReadtoRight().c_str());
+                        STOP;
+                    case '_':
+                        THISCELLVALUE = THISMATHCELLVALUE;
+                        STOP;
+                    case '@':
+                        SaveState;
+                        STOP;
+                    case '(':
+                        isfnc = 1;
+                        STOP;
+                    case ')':
+                        isfnc = 0;
+                        STOP;
+                    case '=':
+                        StackRun.push_back(i + 1);
+                        temp = (CodeSegm->at(i + 1) == '<') ? ReadtoLeft() : ReadtoRight();
+                        temp.pop_back();
+                        i = Definition[temp] + 1;
+                        if (i == 1)
+                        {
+                            i = CodeSegm->size();
+                            cout << RED << "Error Unkown Macro : " << YELLOW << temp <<RED<<" at line : "<< BLUE << LINEATCHARIND[i] + 1<< RESET << endl;
+                        }
+                        temp = "";
+                        STOP;
+                    case ';':
+                        // cout<< (StackRun.size()>0)<<endl;
+                        if (StackRun.size() > 0)
+                        {
+                            i = StackRun[StackRun.size() - 1];
+                            // cout<<i<<endl;
+                            StackRun.pop_back();
+                        }
+                        else
+                        {
+                            i = CodeSegm->size();
+                        }
+                        STOP;
+                    case '&':
+                        File = (CodeSegm->at(i + 2) == '<') ? ReadtoLeft() : ReadtoRight();
+                        fmode = (CodeSegm->at(i + 1) == 'W') ? ios::out : ios::in;
+                        K.open(File, fmode);
+                        STOP;
+                    case '?':
+                        THISCELLVALUE = (int)K.get();
+                        THISCELLVALUE = (-1 == THISCELLVALUE) ? 0 : THISCELLVALUE;
+                        STOP;
+                    case '/':
+                        if (THISCELLVALUE)
+                            K << (char)THISCELLVALUE;
+                        else
+                            K << endl;
+                        STOP;
+                    case '~':
+                        sleep(THISCELLVALUE);
+                        STOP;
+                    case ':':
+                        K.close();
+                        STOP;
+                    case '*':
+                        // cout << THISCELLVALUE << endl;
+                        THISCELLVALUE = THISCELLVALUE * THISCELLVALUE;
+                        STOP;
+                    case '0':
+                        THISCELLVALUE = 0;
+                        STOP;
+                    case '[':
+                        i = (THISCELLVALUE != 0) ? i : (*VMap)[i];
+                        STOP;
+                    case ']':
+                        i = (THISCELLVALUE != 0) ? (*VMap)[i] : i;
+                        STOP;
+                    case 'M':
+                        PrintasMath = 1;
+                        STOP;
+                    case 'S':
+                        PrintasMath = 0;
+                        STOP;
+                    case '%':
+                        i = ReadConst(i);
+                        STOP;
+                    case '!':
+                        DebugPrintAllCells(THISCELL);
+                        STOP;
+                    case '"':
+                        THISMATHCELLVALUE = THISCELLVALUE;
+                        STOP;
+                    case '}':
+                        THISMATHCELL = Go_Right(THISMATHCELL);
+                        STOP;
+                    case '{':
+                        THISMATHCELL = Go_Left(THISMATHCELL);
+                        STOP;
+                    case '\'':
+                        PerformMath(&i);
+                        STOP;
 #if defined(SOCKET)
-                case 'O':
-                    // open socket read ip >
-                    STOP;
-                case 'P':
-                    // put what is to right in socket to the interet
-                    STOP;
-                case 'I':
-                    // input from connection to the
-                    STOP;
+                    case 'O':
+                        // open socket read ip >
+                        STOP;
+                    case 'P':
+                        // put what is to right in socket to the interet
+                        STOP;
+                    case 'I':
+                        // input from connection to the
+                        STOP;
 #endif
-                case ' ':
-                    //cout << "Space ERROR you can't have a ' ' in the code! come on!" << endl;
-                    //exit(0);
-                    STOP;
-                default:
-                    STOP
-                }
+                    case ' ':
+                        // cout << "Space ERROR you can't have a ' ' in the code! come on!" << endl;
+                        // exit(0);
+                        STOP;
+                    default:
+                        STOP
+                    }
         }
 #if defined(DEBUG)
 
