@@ -47,6 +47,9 @@ void ONELINE(CODESEGMPTR Code)
         if (Code->at(i) == '\n')
             Code->erase(i, 1);
 }
+bool Contain(string Fname,char j){
+  for(int i=0;i<Fname.size();i++){if(Fname[i]==j)return 1;}return 0;
+}
 int main(int argc, char **argv)
 {
     if ((argc == 2) && (strcmp(argv[1], "help") == 0))
@@ -90,11 +93,13 @@ int main(int argc, char **argv)
     else
     {
 
-        cout << "Welcome back " << getenv("USER") << "!" << endl;
+        cout << "Welcome back " << getenv("USER") << "!\nuse \"exit;\" to exit" << endl;
         string Fname = "";
         string buff;
 
 #define IFIS(A) (strcmp(Fname.c_str(), A) == 0)
+
+        try{
         while (!IFIS("exit;"))
         {
             cout << ">>";
@@ -103,8 +108,13 @@ int main(int argc, char **argv)
 
             if (IFIS("help"))
                 Help();
+            else if(!IFIS("exit;")&&Contain(Fname,';'))cout<<"Error string have ; in it"<<endl;
             else if (!IFIS("exit;"))
                 system(buff.c_str());
+        }
+        }
+        catch(...){
+
         }
     }
     return 0;

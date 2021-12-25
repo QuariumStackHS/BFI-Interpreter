@@ -1,2 +1,2 @@
-language = "bash"
-run = "sh Build.sh"
+language = "cpp"
+run = "sh Build ; ./RFI"

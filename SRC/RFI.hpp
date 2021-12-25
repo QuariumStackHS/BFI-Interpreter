@@ -62,9 +62,11 @@ struct Cell
     Value This = 0;
     Value Index = 0;
 };
+static vector<Cell*> CellVector= vector<Cell*>();
 Cell *New_Cell()
-{
-    return new Cell;
+{ Cell*ret=new Cell;
+    CellVector.push_back(ret);
+    return ret;
 }
 void Link(Cell *left, Cell *Right)
 {
@@ -495,10 +497,6 @@ public:
                         // input from connection to the
                         STOP;
 #endif
-                    case ' ':
-                        // cout << "Space ERROR you can't have a ' ' in the code! come on!" << endl;
-                        // exit(0);
-                        STOP;
                     default:
                         STOP
                     }
@@ -532,11 +530,12 @@ public:
     }
     ~RFI()
     {
-        DATASEGMPTRMAP::iterator it;
-        for (it = DataSegmS_->begin(); it != DataSegmS_->end(); it++)
+        int it;
+        /*for (it = 0; it != CellVector.size()-1; it++)
         {
-            // Delete_Cell_SAFFLY(it->second);
-        } //*/
+            cout<<it<<endl;
+            delete &CellVector[it];
+        }*/
         // Delete_Cell_SAFFLY(THISCELL)
         delete this->CodeSegm;
         delete this->temp;
