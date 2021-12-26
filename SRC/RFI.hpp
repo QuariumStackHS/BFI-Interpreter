@@ -321,6 +321,8 @@ private:
             THISCELLVSMATHCELL(&&);
         case '|':
             THISCELLVSMATHCELL(||);
+        case '^':
+            THISCELLVSMATHCELL(^);
         case '%':
             THISCELLVSMATHCELL(%);
         case '!':

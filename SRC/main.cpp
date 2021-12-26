@@ -1,9 +1,9 @@
 #include "RFI.hpp"
 #include <chrono>
+#include <filesystem>
 #include <sstream>
 #include <time.h>
 #include <unistd.h>
-
 void Help()
 {
         vector<HelpByChar *> *List = new vector<HelpByChar *>();
@@ -68,25 +68,44 @@ vector<string> Get_Paths()
         Paths.push_back(temp);
         return Paths;
 }
+int Uninstall(char* argv0){
+
+}
 int install()
 {
-        vector<string> Paths = Get_Paths();
-        int ans=0;
-        for (int i = 0; i < Paths.size(); i++)
+        if (!filesystem::exists(".RFIPATH"))
         {
-                cout <<RED<< i <<YELLOW<< "--> "<<BOLDBLUE<< Paths[i] << endl<<RESET;
+                vector<string> Paths = Get_Paths();
+                int ans = 0;
+                for (int i = 0; i < Paths.size(); i++)
+                {
+                        cout << RED << i << YELLOW << "--> " << BOLDBLUE << Paths[i] << endl
+                             << RESET;
+                }
+                cout << "type a number : ";
+                cin >> ans;
+                ofstream PF(".RFIPATH");
+                PF << Paths[ans].c_str();
+                PF.close();
+                string command = "cp ./RFI " + Paths[ans];
+                system(command.c_str());
         }
-        cout<<"type a number : ";
-        cin>>ans;
-
-        string command="cp ./RFI "+Paths[ans];
-        system(command.c_str());
+        else
+        {
+                ifstream PF(".RFIPATH");
+                stringstream ss;
+                ss << PF.rdbuf();
+                string command = "cp ./RFI " + ss.str();
+                system(command.c_str());
+                cout<<BLUE<<"Updated RFI at : "<<YELLOW<<ss.str()<<RESET<<endl;
+        }
+        return 0;
 }
 int main(int argc, char **argv)
 {
         if ((argc == 2) && (strcmp(argv[1], "--help") == 0))
                 Help();
-        else if((argc == 2) && (strcmp(argv[1], "--install") == 0))
+        else if ((argc == 2) && (strcmp(argv[1], "--install") == 0))
                 install();
         else if (argc >= 2)
         {
@@ -109,8 +128,8 @@ int main(int argc, char **argv)
                 time_t InitTime = t2 - t1;
 #endif
                 BF->Execute();
-                //BF->DebugPrintAllCells(BF->DataSegm);
-                // cout<<*Code<<endl;
+                // BF->DebugPrintAllCells(BF->DataSegm);
+                //  cout<<*Code<<endl;
                 delete BF;
 #ifdef __APPLE__ || __MACH__
                 static std::__1::chrono::steady_clock::time_point t3 = std::chrono::high_resolution_clock::now();
