@@ -94,6 +94,8 @@ HelpByChar *newHelpByChar(char c, string Desc)
 }
 class RFI
 {
+    public:
+DATASEGMPTR DataSegm;
 private:
     CODESEGMPTR CodeSegm;
     VMAPPTR VMap;
@@ -101,7 +103,7 @@ private:
     Value index = 0;
     Value DATAindex = 0;
     DATASEGMPTRMAPPTR DataSegmS_;
-    DATASEGMPTR DataSegm;
+    
     DATASEGMPTR MATHCELL;
     map<string, int> Definition = map<string, int>();
     vector<int> StackRun = vector<int>();
@@ -111,9 +113,8 @@ private:
     MAPINT2INT LINEATCHARIND;
 #define SaveState (*DataSegmS_)[DATAindex] = THISCELL
 #define Go(A)                                                                                  \
-    A DATAindex; /*Flaw here*/                                                                 \
-    \ 
-    SaveState = ((*DataSegmS_)[DATAindex] == nullptr) ? New_Cell() : (*DataSegmS_)[DATAindex]; \
+    A DATAindex; /*Flaw here*/                                                                 \ 
+    THISCELL = ((*DataSegmS_)[DATAindex] == nullptr) ? New_Cell() : (*DataSegmS_)[DATAindex]; \
     index = THISCELL->Index;
     DATASEGMPTR LS;
     DATASEGMPTR Go_Left(DATASEGMPTR This)
@@ -246,6 +247,14 @@ private:
             exit(1);
     }
     bool PrintasMath = 0;
+    void WriteConst(string j){
+        DATASEGMPTR Noze=THISCELL;
+        for(int i=0;i<j.size();i++){
+            Noze->This=j[i];    
+        Go_Right(Noze);
+
+        }
+    }
     int ReadConst(int i)
     {
         int Tempindex = index;
@@ -286,23 +295,7 @@ private:
         else
             cout << (char)T->This;
     }
-    void DebugPrintAllCells(DATASEGMPTR head)
-    {
-        char sp = 0;
-        while (head->LeftCell != nullptr)
-            head = head->LeftCell;
-        while (head != nullptr)
-        {
-            if (index == head->Index)
-                sp = '*';
-            else
-                sp = 0;
-            if (head)
-                cout << sp << "[(" << head->This << " , " << head->Index << " )]," << sp;
-            head = head->RightCell;
-        }
-        cout << endl;
-    }
+
     void PerformMath(int *K)
     {
         ++*K;
@@ -350,6 +343,7 @@ public:
         ios_base::openmode fmode;
         fstream K = fstream("", ios::in | ios::out);
         string File = "";
+        string tempcin="";
         bool isfnc = 0;
         for (Value i = 0; i < (CodeSegm->size()); i++)
         {
@@ -466,6 +460,10 @@ public:
                     case 'S':
                         PrintasMath = 0;
                         STOP;
+                    case 'G':
+                        cin>>tempcin;
+                        WriteConst(tempcin);
+                        STOP;
                     case '%':
                         i = ReadConst(i);
                         STOP;
@@ -510,7 +508,23 @@ public:
 
 #endif
     }
-    RFI(CODESEGMPTR code)
+    void DebugPrintAllCells(DATASEGMPTR head)
+    {
+        char sp = 0;
+        while (head->LeftCell != nullptr)
+            head = head->LeftCell;
+        while (head != nullptr)
+        {
+            if (index == head->Index)
+                sp = '*';
+            else
+                sp = 0;
+            if (head)
+                cout << sp << "[(" << head->This << " , " << head->Index << " )]," << sp;
+            head = head->RightCell;
+        }
+        cout << endl;
+    }    RFI(CODESEGMPTR code)
     {
         VMap = new VMAP;
         temp = new TEMP;
@@ -532,14 +546,9 @@ public:
     }
     ~RFI()
     {
-        DATASEGMPTRMAP::iterator it;
-        for (it = DataSegmS_->begin(); it != DataSegmS_->end(); it++)
-        {
-            // Delete_Cell_SAFFLY(it->second);
-        } //*/
-        // Delete_Cell_SAFFLY(THISCELL)
         delete this->CodeSegm;
         delete this->temp;
+        //i know there is not a TOTAL delete
         delete this->DataSegm;
         delete this->DataSegmS_;
         delete this->VMap;

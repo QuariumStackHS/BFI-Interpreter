@@ -1,5 +1,4 @@
-
-
+#You can run this Build Script with RFI or bash/zsh#
 ##|INIT|(@^+++*+@V;)
 ##|Compile|(
 ##%>
