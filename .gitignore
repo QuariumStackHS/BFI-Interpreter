@@ -30,5 +30,6 @@
 *.exe
 *.out
 *.app
+*_RFI
 #Scrap
 .DS_Store
