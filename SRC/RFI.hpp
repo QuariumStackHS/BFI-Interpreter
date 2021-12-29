@@ -243,6 +243,8 @@ private:
             }
             CodeOrCom[i] = isCod;
         }
+        if(temp->size()>0)
+            cout<<"error missing ] but we dont know where good luck!"<<endl;
         if (errors >= 1)
             exit(1);
     }

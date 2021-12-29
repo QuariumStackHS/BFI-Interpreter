@@ -66,12 +66,10 @@ vector<string> Get_Paths()
                 }
         }
         Paths.push_back(temp);
+        Paths.push_back("BFI");
         return Paths;
 }
-int Uninstall(char* argv0){
-
-}
-int install()
+int Uninstall()
 {
         if (!filesystem::exists(".RFIPATH"))
         {
@@ -87,6 +85,123 @@ int install()
                 ofstream PF(".RFIPATH");
                 PF << Paths[ans].c_str();
                 PF.close();
+                string command = "rm " + Paths[ans] + "/RFI";
+                system(command.c_str());
+        }
+        else
+        {
+                ifstream PF(".RFIPATH");
+                stringstream ss;
+                ss << PF.rdbuf();
+                string command = "rm " + ss.str() + ss.str() + "/RFI";
+                if (system(command.c_str()))
+                        cout << "Error while unsintalling RFI" << endl;
+                else
+                        cout << BLUE << "Uninstalled RFI at : " << YELLOW << ss.str() << RESET << endl;
+        }
+        return 0;
+}
+int Link()
+{
+        std::string path = "./";
+        ifstream p;
+        ofstream op;
+        stringstream ss;
+        string Found = "#Link#";
+        string temp = "";
+        string tempnc = "";
+        string pathp;
+        ifstream PF(".RFIPATH");
+        stringstream ss2;
+        ss2 << PF.rdbuf();PF.close();
+        string INSPath=ss.str();
+        bool Linked = 0;
+        bool isincomment=0;
+        int j = 0;
+        for (const auto &entry : filesystem::directory_iterator(path))
+        {
+                try
+                {pathp=entry.path().c_str();
+                        p = ifstream(pathp);
+                        /*#Linked#*/
+                        // cout<<p.<<endl;
+                        ss << p.rdbuf();
+                        temp = ss.str();
+                        // cout<<temp<<endl;
+                        while (temp.size() > j)
+                        {
+                                if (Found[j] == (temp[j]))
+                                        j++;
+                                else if (temp[j] == '\n')
+                                {
+                                        Linked = 1;
+                                        j = temp.size();
+                                }
+                                else
+                                        j = temp.size();
+                        }
+                        if (Linked)
+                        {
+#define BackslashON(c)          \
+        case c:                 \
+                tempnc += '\\'; \
+                tempnc += c;    \
+                break;
+                                for (int k = 0; k < temp.size(); k++)
+                                {
+                                        switch (temp[k])
+                                        {
+                                                BackslashON('"');
+                                                BackslashON('\\');
+                                                case '\n':
+                                                break;
+                                                case '#':
+                                                isincomment=!isincomment;
+                                                break;
+                                        default:
+                                                if(!isincomment)
+                                                tempnc += temp[k];
+                                                break;
+                                        }
+                                }
+                        }
+                        //cout<<pathp<<Linked<<endl;
+                        if(Linked){
+                        tempnc="#include <RFI.hpp>\nint main(){CODESEGM *Code=new CODESEGM(\""+tempnc+"\");RFI*Int=new RFI(Code);Int->Execute();delete Int;return 0;}";
+                        op=ofstream(pathp+".cpp");
+                        op<<tempnc;
+                        op.close();
+                        tempnc="g++ -std=c++17 "+pathp+".cpp -w -o "+pathp+"_RFI -I"+INSPath+"/.RFIHEADER;rm "+pathp+".cpp";
+                        system(tempnc.c_str());
+                        }
+                        tempnc="";
+                        Linked = 0;
+                        j = 0;
+                        ss = stringstream();
+                        p.close();
+                }
+                catch (...)
+                {
+                }
+        }
+}
+int install()
+{string p;
+        if (!filesystem::exists(".RFIPATH"))
+        {
+                vector<string> Paths = Get_Paths();
+                int ans = 0;
+                for (int i = 0; i < Paths.size(); i++)
+                {
+                        cout << RED << i << YELLOW << "--> " << BOLDBLUE << Paths[i] << endl
+                             << RESET;
+                }
+                cout << "type a number : ";
+                cin >> ans;
+                ofstream PF(".RFIPATH");
+                PF << Paths[ans].c_str();
+                PF.close();
+                p=Paths[ans];
                 string command = "cp ./RFI " + Paths[ans];
                 system(command.c_str());
         }
@@ -96,9 +211,20 @@ int install()
                 stringstream ss;
                 ss << PF.rdbuf();
                 string command = "cp ./RFI " + ss.str();
+                p=ss.str();
                 system(command.c_str());
-                cout<<BLUE<<"Updated RFI at : "<<YELLOW<<ss.str()<<RESET<<endl;
+                cout << BLUE << "Updated RFI at : " << YELLOW << ss.str() << RESET << endl;
         }
+        if(!filesystem::exists(p+"/.RFIHEADER/"))
+        system(("mkdir "+p+"/.RFIHEADER/").c_str());
+        string np="cp SRC/RFI.hpp "+p+"/.RFIHEADER/";
+        string np3="cp SRC/main.cpp "+p+"/.RFIHEADER/";
+        ofstream UpdateRFI("Update_RFI");
+        p+="/.RFIHEADER/";
+        UpdateRFI<<"#Link#\n|PRE_INIT|(@^+++*+@V;)|Compile|(%>"<<"g++ -std=c++17 "<<p<<"/main.cpp -I"<<p<<"/.RFIHEADER"<<" -o RFI 2>Log 1>Log%$;)|Install|([>]%>./RFI --install%$@V%>rm Log ; rm RFI%$@^;)|ERROR_CHECKING|(<'=}_{[S%<NO ERROR!%[<.]^.V%<Install% =< ;]%>Log%&>S[?.]:S%<ERROR!%[<.]^.V;)%>PRE_INIT% => %>Compile% =>>%>ERROR_CHECKING% =>";
+        system(np3.c_str());
+        system(np.c_str());
+
         return 0;
 }
 int main(int argc, char **argv)
@@ -107,6 +233,10 @@ int main(int argc, char **argv)
                 Help();
         else if ((argc == 2) && (strcmp(argv[1], "--install") == 0))
                 install();
+        else if ((argc == 2) && (strcmp(argv[1], "--uninstall") == 0))
+                Uninstall();
+        else if ((argc == 2) && (strcmp(argv[1], "--link") == 0))
+                Link();
         else if (argc >= 2)
         {
 #ifdef __APPLE__ || __MACH__
