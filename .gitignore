@@ -31,5 +31,6 @@
 *.out
 *.app
 *_RFI
+RFI
 #Scrap
 .DS_Store
