@@ -6,7 +6,8 @@
 *.lo
 *.o
 *.obj
-
+Update_RFI
+.RFIPATH
 # Precompiled Headers
 *.gch
 *.pch

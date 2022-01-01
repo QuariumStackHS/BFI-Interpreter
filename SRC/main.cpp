@@ -1,7 +1,8 @@
 #include "RFI.hpp"
 
 int main(int argc, char **argv)
-{
+{srand (time(NULL));
+int ret=0;
         if ((argc == 2) && (strcmp(argv[1], "--help") == 0))
                 Help();
         else if ((argc == 2) && (strcmp(argv[1], "--install") == 0))
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
                 time_t t2 = time(0);
                 time_t InitTime = t2 - t1;
 #endif
-                BF->Execute();
+                ret=BF->Execute();
                 // BF->DebugPrintAllCells(BF->DataSegm);
                 //  cout<<*Code<<endl;
                 delete BF;
@@ -88,5 +89,5 @@ RFI *BF = new RFI(Code);
                         *Code="";
                 }
         }
-        return 0;
+        return ret;
 }

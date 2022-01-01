@@ -1,0 +1,24 @@
+|PRE_INIT|(@^+++*+@V;)
+|loop|(0"++++***+'R}0'=;)
+|Main|(
+%>PRE_INIT%=>
+    [>] S
+    %>Iterations Computer can handle %
+    [>.] M
+    ++++***.{"}S
+    @^.@V
+        [->
+        %>loop%=>
+        }_{
+        [
+            <@VS
+            %> (Higher=Better) : %
+            [>.]
+            M@^.@VS
+            @^^.@VV ;]
+            <
+    ]
+    %>Look like you have not Any Zero%
+    [>.]
+    @^.@V
+)

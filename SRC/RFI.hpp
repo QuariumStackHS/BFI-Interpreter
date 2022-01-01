@@ -34,7 +34,7 @@ using namespace std;
 #define DATASEGMPTRMAPPTR map<Value, DATASEGMPTR> *
 #define MAPINT2BOOL map<int, bool>
 #define MAPINT2INT map<int, int>
-#define Switchif(a) (CodeSegm->at(i - 1) == a)
+#define Switchif(a) (CodeSegm[FileName]->at(i - 1) == a)
 #define ON(var) ? var : !var
 #define ELSE0 :0;
 #define RESET "\033[0m"
@@ -93,6 +93,16 @@ struct HelpByChar
     char c;
     string Desc;
 };
+string *get_Code(string filename)
+{
+    ifstream file(filename);
+    if (!file.good())
+        exit(0);
+    stringstream ss;
+    ss << file.rdbuf();
+    string *ret = new string(ss.str());
+    return ret;
+}
 HelpByChar *newHelpByChar(char c, string Desc)
 {
     HelpByChar *P = new HelpByChar();
@@ -105,8 +115,9 @@ class RFI
 public:
     DATASEGMPTR DataSegm;
 
-//private:
-    CODESEGMPTR CodeSegm;
+    // private:
+    map<string, CODESEGMPTR> CodeSegm;
+    string FileName = "";
     VMAPPTR VMap;
     TEMPPTR temp;
     Value index = 0;
@@ -187,11 +198,11 @@ public:
         string Vcode = "";
         int LINENBR = 0;
         LINEATCHARIND = map<int, int>();
-        for (int i = 0; i < CodeSegm->size(); i++)
+        for (int i = 0; i < CodeSegm[FileName]->size(); i++)
         {
             LINEATCHARIND[i] = LINENBR;
-            Vcode += CodeSegm->at(i);
-            switch (CodeSegm->at(i))
+            Vcode += CodeSegm[FileName]->at(i);
+            switch (CodeSegm[FileName]->at(i))
             {
             case '|':
                 if (inVName)
@@ -203,11 +214,11 @@ public:
                 inVName = (!inVName);
                 STOP;
             case '(':
-                if (isCod && !inValue && (CodeSegm->at(i - 1) != '|'))
+                if (isCod && !inValue && (CodeSegm[FileName]->at(i - 1) != '|'))
                 {
                     cout << RED << "( require that the Previous char is '|' at line: " << endl
                          << BLUE << LINEATCHARIND[i] + 1 << RESET;
-                    cout << Vcode << RED << CodeSegm->at(i + 1) << " <-- use ('<' '>')!" << RESET << endl;
+                    cout << Vcode << RED << CodeSegm[FileName]->at(i + 1) << " <-- use ('<' '>')!" << RESET << endl;
                     errors++;
                 }
                 STOP;
@@ -217,13 +228,13 @@ public:
 
                 STOP;
             case '%':
-                if (isCod && !((CodeSegm->at(i + 1) == '<') || (CodeSegm->at(i + 1) == '>')))
+                if (isCod && !((CodeSegm[FileName]->at(i + 1) == '<') || (CodeSegm[FileName]->at(i + 1) == '>')))
                 {
                     if ((!inValue))
                     {
                         cout << RED << "% require that the next char is '<' | '>' at line: " << endl
                              << BLUE << LINEATCHARIND[i] + 1 << RESET;
-                        cout << Vcode << RED << CodeSegm->at(i + 1) << " <-- use ('<' '>')!" << RESET << endl;
+                        cout << Vcode << RED << CodeSegm[FileName]->at(i + 1) << " <-- use ('<' '>')!" << RESET << endl;
                         errors++;
                     }
                 }
@@ -248,7 +259,7 @@ public:
                 STOP;
             default:
                 if (inVName)
-                    Vname += CodeSegm->at(i);
+                    Vname += CodeSegm[FileName]->at(i);
                 STOP
             }
             CodeOrCom[i] = isCod;
@@ -274,22 +285,22 @@ public:
         DATASEGMPTR Noze = THISCELL;
         DATASEGMPTR temp = Noze;
         i++;
-        char direction = (*CodeSegm)[i];
+        char direction = (*CodeSegm[FileName])[i];
         i++;
         int ireplace = 0;
         int jreplace = 0;
-        for (int j = i; j < CodeSegm->size(); j++)
+        for (int j = i; j < CodeSegm[FileName]->size(); j++)
         {
-            if ((*CodeSegm)[j] == '%' && (*CodeSegm)[j - 1] == '\\')
+            if ((*CodeSegm[FileName])[j] == '%' && (*CodeSegm[FileName])[j - 1] == '\\')
             {
             }
-            else if ((*CodeSegm)[j] == '%')
+            else if ((*CodeSegm[FileName])[j] == '%')
             {
                 jreplace = j;
-                j = CodeSegm->size();
+                j = CodeSegm[FileName]->size();
             }
             Noze = (direction == '<') ? Go_Left(Noze) : Go_Right(Noze);
-            Noze->This = (int)(*CodeSegm)[j];
+            Noze->This = (int)(*CodeSegm[FileName])[j];
             ireplace = jreplace;
 
             // printcell(Noze);
@@ -313,7 +324,7 @@ public:
     {
         ++*K;
         // cout << THISMATHCELLVALUE << " | " << THISCELLVALUE << endl;
-        switch (CodeSegm->at(*K))
+        switch (CodeSegm[FileName]->at(*K))
         {
 #define THISCELLVSMATHCELL(OP)                       \
     \                                                         
@@ -344,6 +355,9 @@ public:
             THISCELLVSMATHCELL(!=);
         case '=':
             THISCELLVSMATHCELL(==);
+        case 'R':
+            Go_Right(THISMATHCELL)->This = (rand() % THISCELLVALUE + THISMATHCELLVALUE);
+            break;
         default:
             break;
         }
@@ -353,25 +367,35 @@ public:
     void ShowHelp()
     {
     }
-    void Execute(CODESEGMPTR P){
-        CodeSegm=P;
+    void Execute(CODESEGMPTR P)
+    {
+        CodeSegm[FileName] = P;
         Execute();
     }
-    void Execute()
+    int Execute()
     {
+        int ret = 0;
         string inbuff = "";
         string temp = "";
         ios_base::openmode fmode;
         fstream K = fstream("", ios::in | ios::out);
         string File = "";
         string tempcin = "";
+        DATASEGMPTR tempptr;
         bool isfnc = 0;
-        for (Value i = 0; i < (CodeSegm->size()); i++)
-        {
-            isfnc = (CodeSegm->at(i) == ')') ? 0 : isfnc;
+        this->StackRun.push_back(CodeSegm[FileName]->size());
+        for (Value i = Definition["Main"] + 2; i < (CodeSegm[FileName]->size()); i++)
+        { // cout<<CodeSegm[FileName]->at(i)<<endl;
+            if (i == 2)
+            {
+                i = CodeSegm[FileName]->size();
+                cout << RED << "Error Unkown Macro : " << YELLOW << "Main" << RED << ", Please Define" << BOLDCYAN << " |Main|(*" << BLUE << "Code" << BOLDCYAN << "*)" << RESET << RED " inside your code!" << endl;
+                exit(1);
+            };
+            isfnc = (CodeSegm[FileName]->at(i) == ')') ? 0 : isfnc;
             if (!isfnc)
                 if (CodeOrCom[i])
-                    switch (CodeSegm->at(i))
+                    switch (CodeSegm[FileName]->at(i))
                     {
                         ;
                     case '|':
@@ -428,12 +452,12 @@ public:
                         STOP;
                     case '=':
                         StackRun.push_back(i + 1);
-                        temp = (CodeSegm->at(i + 1) == '<') ? ReadtoLeft() : ReadtoRight();
+                        temp = (CodeSegm[FileName]->at(i + 1) == '<') ? ReadtoLeft() : ReadtoRight();
                         temp.pop_back();
                         i = Definition[temp] + 1;
                         if (i == 1)
                         {
-                            i = CodeSegm->size();
+                            i = CodeSegm[FileName]->size();
                             cout << RED << "Error Unkown Macro : " << YELLOW << temp << RED << " at line : " << BLUE << LINEATCHARIND[i] + 1 << RESET << endl;
                         }
                         temp = "";
@@ -448,12 +472,18 @@ public:
                         }
                         else
                         {
-                            i = CodeSegm->size();
+                            ret = THISCELLVALUE;
+                            i = CodeSegm[FileName]->size();
                         }
                         STOP;
+                    case 'E':
+                        tempptr=THISCELL;
+                        THISCELL=THISMATHCELL;
+                        THISMATHCELL=tempptr;
+                        STOP;
                     case '&':
-                        File = (CodeSegm->at(i + 2) == '<') ? ReadtoLeft() : ReadtoRight();
-                        fmode = (CodeSegm->at(i + 1) == 'W') ? ios::out : ios::in;
+                        File = (CodeSegm[FileName]->at(i + 2) == '<') ? ReadtoLeft() : ReadtoRight();
+                        fmode = (CodeSegm[FileName]->at(i + 1) == 'W') ? ios::out : ios::in;
                         K.open(File, fmode);
                         STOP;
                     case '?':
@@ -543,6 +573,7 @@ public:
             << "Program ended with Value : " << THISCELLVALUE << " at index : " << index << endl;
 
 #endif
+        return ret;
     }
     void DebugPrintAllCells(DATASEGMPTR head)
     {
@@ -568,7 +599,7 @@ public:
         DataSegmS_ = new DATASEGMPTRMAP;
         MATHCELL = new DATASEGM;
         DataSegm = new DATASEGM;
-        CodeSegm = code;
+        CodeSegm[FileName] = code;
         INIT();
     }
     RFI(const char *code)
@@ -578,12 +609,12 @@ public:
         MATHCELL = new DATASEGM;
         DataSegmS_ = new DATASEGMPTRMAP;
         DataSegm = new DATASEGM;
-        CodeSegm = new CODESEGM(code);
+        CodeSegm[FileName] = new CODESEGM(code);
         INIT();
     }
     ~RFI()
     {
-        delete this->CodeSegm;
+        delete this->CodeSegm[FileName];
         delete this->temp;
         // i know there is not a TOTAL delete
         delete this->DataSegm;
@@ -591,7 +622,7 @@ public:
         delete this->VMap;
     }
 };
-std::string ver_string(int a, int b, int c)
+string ver_string(int a, int b, int c)
 {
     std::ostringstream ss;
     ss << a << '.' << b << '.' << c;
@@ -650,6 +681,7 @@ void Help()
     List->push_back(SET(']', "jump to correct '[' if THISCELLVALUE!=0"));
     List->push_back(SET('L', "Lock THISCELLVALUE to read only"));
     List->push_back(SET('l', "unLock THISCELLVALUE from read only"));
+    List->push_back(SET('E', "swap THISCELLPTR and THISMATHCELLPTR"));
     List->push_back(SET('^', "Set current Cell to Up in 1D map (THIS is a bit complex)"));
     List->push_back(SET('V', "Set current Cell to Down in 1D map (THIS is a bit complex)"));
     List->push_back(SET('$', "read a string in Cell->Right until 0 and run it as sh output is then put in current Cell"));
@@ -669,7 +701,8 @@ void Help()
     List->push_back(SET('"', "Set this Pointed Math Value to this cell Value"));
     List->push_back(SET('}', "Go To the Right on this Math Cell"));
     List->push_back(SET('{', "Go To the Left on this Math Cell"));
-    List->push_back(SET('\'', "Require 1 argument and it is the operator, Right Cell of MathCell = THISCELLVALUE operator THISMATHCELL (a list of operator is: +,-,/,*,<,>,&,|,%,!,=;)"));
+    List->push_back(SET('!', "Debug char"));
+    List->push_back(SET('\'', "Require 1 argument and it is the operator, Right Cell of MathCell = THISCELLVALUE operator THISMATHCELL (a list of operator is: +,-,/,*,<,>,&,|,%,!,=,R;)"));
     List->push_back(SET('=', "Require 1 argument and it is the Direction, run macro defined (See Macro file as exemple)"));
     cout << YELLOW << "──>" << GREEN << " Cell is use here to describe a structure with one Left Cell, Right Cell and an int so it can move < or >\n";
     cout << "    there is a Map of int to Cell pointer that can be use to go \"up\" set the entry of the 'Level' and come back to that state later" << endl;
@@ -830,6 +863,8 @@ int Link()
         }
     }
 }
+#define RFISTR << "#Link#\n|Update|(%>RFI --update%$;)|PRE_INIT|(@^+++*+@V;)|Compile|(%>" \
+               << "g++ -std=c++17 " << p << "/main.cpp -I" << p << " -o RFI 2>Log 1>Log%$;)|Install|([>]%>./RFI --install%$@V%>rm Log ; rm RFI%$@^;)|ERROR_CHECKING|(<'=}_{[S%<NO ERROR!%[<.]^.V%<Install% =< ;]%>Log%&>S[?.]:S%<ERROR!%[<.]^.V;)|Main|(%>Update% =>%>PRE_INIT% => %>Compile% =>>%>ERROR_CHECKING% =>)";
 int Update()
 {
     ifstream PF(".RFIPATH");
@@ -838,12 +873,12 @@ int Update()
     string p = ss.str();
     if (!filesystem::exists(p + "/.RFIHEADER/"))
         system(("mkdir " + p + "/.RFIHEADER/").c_str());
+
     string np = "cp SRC/RFI.hpp " + p + "/.RFIHEADER/";
     string np3 = "cp SRC/main.cpp " + p + "/.RFIHEADER/";
     ofstream UpdateRFI("Update_RFI");
     p += "/.RFIHEADER";
-    UpdateRFI << "#Link#\n|Update|(%>RFI --update%$;)|PRE_INIT|(@^+++*+@V;)|Compile|(%>"
-              << "g++ -std=c++17 " << p << "/main.cpp -I" << p << " -o RFI 2>Log 1>Log%$;)|Install|([>]%>./RFI --install%$@V%>rm Log ; rm RFI%$@^;)|ERROR_CHECKING|(<'=}_{[S%<NO ERROR!%[<.]^.V%<Install% =< ;]%>Log%&>S[?.]:S%<ERROR!%[<.]^.V;)%>Update% =>%>PRE_INIT% => %>Compile% =>>%>ERROR_CHECKING% =>";
+    UpdateRFI RFISTR;
     system(np3.c_str());
     system(np.c_str());
 }
@@ -884,11 +919,9 @@ int install()
     string np3 = "cp SRC/main.cpp " + p + "/.RFIHEADER/";
     ofstream UpdateRFI("Update_RFI");
     p += "/.RFIHEADER";
-    UpdateRFI << "#Link#\n|Update|(%>RFI --update%$;)|PRE_INIT|(@^+++*+@V;)|Compile|(%>"
-              << "g++ -std=c++17 " << p << "/main.cpp -I" << p << " -o RFI 2>Log 1>Log%$;)|Install|([>]%>./RFI --install%$@V%>rm Log ; rm RFI%$@^;)|ERROR_CHECKING|(<'=}_{[S%<NO ERROR!%[<.]^.V%<Install% =< ;]%>Log%&>S[?.]:S%<ERROR!%[<.]^.V;)%>Update% =>%>PRE_INIT% => %>Compile% =>>%>ERROR_CHECKING% =>";
+    UpdateRFI RFISTR;
     system(np3.c_str());
     system(np.c_str());
-
     return 0;
 }
 
