@@ -18,7 +18,7 @@
 //#include <.RFIPATH.h>
 using namespace std;
 #define Value int
-#define RFIVERSION "0.0.0"
+#define RFIVERSION "Beta 1.0.0"
 #define VMAP map<Value, Value>
 #define DATASEGM Cell
 #define CODESEGM string
@@ -326,8 +326,7 @@ public:
         // cout << THISMATHCELLVALUE << " | " << THISCELLVALUE << endl;
         switch (CodeSegm[FileName]->at(*K))
         {
-#define THISCELLVSMATHCELL(OP)                       \
-    \                                                         
+#define THISCELLVSMATHCELL(OP)                       \                                                     
         Go_Right(THISMATHCELL)                       \
         ->This = THISCELLVALUE OP THISMATHCELLVALUE; \
     break;
@@ -431,6 +430,11 @@ public:
                         if (!DataSegm->locked)
                             THISCELLVALUE = (!DataSegm->locked) ? system(ReadtoRight().c_str()) : THISCELLVALUE;
                         STOP;
+                    case 'd':
+                        delete THISCELL;
+                        THISCELL=new Cell();
+                        SaveState
+                        STOP;
                     case 'L':
                         DataSegm->locked = 1;
                         STOP;
@@ -464,7 +468,7 @@ public:
                         STOP;
                     case ';':
                         // cout<< (StackRun.size()>0)<<endl;
-                        if (StackRun.size() > 0)
+                        if (StackRun.size() > 1)
                         {
                             i = StackRun[StackRun.size() - 1];
                             // cout<<i<<endl;
@@ -477,9 +481,9 @@ public:
                         }
                         STOP;
                     case 'E':
-                        tempptr=THISCELL;
-                        THISCELL=THISMATHCELL;
-                        THISMATHCELL=tempptr;
+                        tempptr = THISCELL;
+                        THISCELL = THISMATHCELL;
+                        THISMATHCELL = tempptr;
                         STOP;
                     case '&':
                         File = (CodeSegm[FileName]->at(i + 2) == '<') ? ReadtoLeft() : ReadtoRight();
@@ -682,6 +686,7 @@ void Help()
     List->push_back(SET('L', "Lock THISCELLVALUE to read only"));
     List->push_back(SET('l', "unLock THISCELLVALUE from read only"));
     List->push_back(SET('E', "swap THISCELLPTR and THISMATHCELLPTR"));
+    List->push_back(SET('d', "{Delete THISCELLPTR;}=new cell()"));
     List->push_back(SET('^', "Set current Cell to Up in 1D map (THIS is a bit complex)"));
     List->push_back(SET('V', "Set current Cell to Down in 1D map (THIS is a bit complex)"));
     List->push_back(SET('$', "read a string in Cell->Right until 0 and run it as sh output is then put in current Cell"));
@@ -699,8 +704,8 @@ void Help()
     List->push_back(SET('%', "Read in Code a string and set it to the Right'>' or Left'<' exemple %>This is A const%"));
     List->push_back(SET(';', "Terminate Program"));
     List->push_back(SET('"', "Set this Pointed Math Value to this cell Value"));
-    List->push_back(SET('}', "Go To the Right on this Math Cell"));
     List->push_back(SET('{', "Go To the Left on this Math Cell"));
+    List->push_back(SET('}', "Go To the Right on this Math Cell"));
     List->push_back(SET('!', "Debug char"));
     List->push_back(SET('\'', "Require 1 argument and it is the operator, Right Cell of MathCell = THISCELLVALUE operator THISMATHCELL (a list of operator is: +,-,/,*,<,>,&,|,%,!,=,R;)"));
     List->push_back(SET('=', "Require 1 argument and it is the Direction, run macro defined (See Macro file as exemple)"));
@@ -848,8 +853,11 @@ int Link()
                 tempnc = "#include <RFI.hpp>\nint main(){CODESEGM *Code=new CODESEGM(\"" + tempnc + "\");RFI*Int=new RFI(Code);Int->Execute();delete Int;return 0;}";
                 op = ofstream(pathp + ".cpp");
                 op << tempnc;
+#ifdef __APPLE__
+                pathp.erase(0, 2);
+#endif
                 op.close();
-                tempnc = "g++ -std=c++17 " + pathp + ".cpp -w -o " + pathp + "_RFI -I" + INSPath + "/.RFIHEADER ;rm " + pathp + ".cpp";
+                tempnc = "g++ -std=c++17 " + pathp + ".cpp -w -o _" + pathp + " -I" + INSPath + "/.RFIHEADER ;rm " + pathp + ".cpp";
                 system(tempnc.c_str());
             }
             tempnc = "";
@@ -881,6 +889,16 @@ int Update()
     UpdateRFI RFISTR;
     system(np3.c_str());
     system(np.c_str());
+}
+int AddToPath(string S)
+{
+    ifstream PF(".RFIPATH");
+    stringstream ss;
+    ss << PF.rdbuf();
+    string p = ss.str();
+    string np = "cp " + S + " " + p;
+    system(np.c_str());
+    return 0;
 }
 int install()
 {

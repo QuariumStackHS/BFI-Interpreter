@@ -3,7 +3,7 @@
 |Main|(
 %>PRE_INIT%=>
     [>] S
-    %>Iterations Computer can handle %
+    %>Iterations Computer will do at Max : %
     [>.] M
     ++++***.{"}S
     @^.@V
@@ -15,8 +15,9 @@
             %> (Higher=Better) : %
             [>.]
             M@^.@VS
-            @^^.@VV ;]
-            <
+            @^^.@V@;
+        ]
+        <
     ]
     %>Look like you have not Any Zero%
     [>.]

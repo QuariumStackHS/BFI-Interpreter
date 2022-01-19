@@ -1,4 +1,4 @@
-#Link#
+#Dont Link#
 ##|Main|(%>PRE_INIT% => %>Compile% => > %>ERROR_CHECKING% =>)
 #You can run this Build Script with RFI or bash/zsh#
 ##|PRE_INIT|(@^+++*+@V;)
