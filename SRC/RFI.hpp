@@ -674,7 +674,9 @@ void Help()
 
     vector<HelpByChar *> *List = new vector<HelpByChar *>();
     cout << "RFI Version : " << RFIVERSION << endl;
+    #ifdef __APPLE__
     cout << RED << "[" << YELLOW << true_cxx << ver_string(__clang_major__, __clang_minor__, __clang_patchlevel__) << BOLDCYAN << "(" << Version << ")" << RESET << RED << " G++ " << YELLOW << ver_string(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__) << RED << "]" << YELLOW << "-> " << getOsName() << RESET << endl;
+    #endif
     List->push_back(SET('<', "Go to The Left Cell(THISCELLPTR=THISCELLPTR->Left)"));
     List->push_back(SET('>', "Go to The Right Cell(THISCELLPTR=THISCELLPTR->Right)"));
     List->push_back(SET('.', "Print the Value of Your Cell (As Char(S) or int(M))"));
