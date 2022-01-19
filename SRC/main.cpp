@@ -72,8 +72,9 @@ int main(int argc, char **argv)
                 else
                         Version = "pre-standard C++";
                 cout << CYAN<<"RFI "<<BLUE<< RFIVERSION<<RESET<< endl;
+                #ifdef __APPLE__
                 cout << RED << "[" << YELLOW << true_cxx << ver_string(__clang_major__, __clang_minor__, __clang_patchlevel__) << BOLDCYAN << "(" << Version << ")" << RESET << RED << " G++ " << YELLOW << ver_string(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__) << RED << "]" << RESET << endl;
-
+                #endif
                 cout << "Welcome back " << getenv("USER") << "!" << endl;
                 string Fname = "";
                 string buff;
