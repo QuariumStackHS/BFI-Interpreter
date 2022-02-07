@@ -15,7 +15,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <vector>
-//#include <.RFIPATH.h>
 using namespace std;
 #define Value int
 #define RFIVERSION "Beta 1.0.0"
@@ -36,7 +35,7 @@ using namespace std;
 #define MAPINT2INT map<int, int>
 #define Switchif(a) (CodeSegm[FileName]->at(i - 1) == a)
 #define ON(var) ? var : !var
-#define ELSE0 :0;
+#define ELSE0 : 0 ;
 #define RESET "\033[0m"
 #define BLACK "\033[30m"              /* Black */
 #define RED "\033[31m"                /* Red */
@@ -225,7 +224,6 @@ public:
             case '[':
                 if (isCod)
                     temp->push_back(i);
-
                 STOP;
             case '%':
                 if (isCod && !((CodeSegm[FileName]->at(i + 1) == '<') || (CodeSegm[FileName]->at(i + 1) == '>')))
@@ -326,7 +324,8 @@ public:
         // cout << THISMATHCELLVALUE << " | " << THISCELLVALUE << endl;
         switch (CodeSegm[FileName]->at(*K))
         {
-#define THISCELLVSMATHCELL(OP)                       \                                                     
+#define THISCELLVSMATHCELL(OP)                       \
+    \                                                     
         Go_Right(THISMATHCELL)                       \
         ->This = THISCELLVALUE OP THISMATHCELLVALUE; \
     break;
@@ -432,9 +431,9 @@ public:
                         STOP;
                     case 'd':
                         delete THISCELL;
-                        THISCELL=new Cell();
+                        THISCELL = new Cell();
                         SaveState
-                        STOP;
+                            STOP;
                     case 'L':
                         DataSegm->locked = 1;
                         STOP;
@@ -572,10 +571,8 @@ public:
                     }
         }
 #if defined(DEBUG)
-
         cout
             << "Program ended with Value : " << THISCELLVALUE << " at index : " << index << endl;
-
 #endif
         return ret;
     }
@@ -674,9 +671,9 @@ void Help()
 
     vector<HelpByChar *> *List = new vector<HelpByChar *>();
     cout << "RFI Version : " << RFIVERSION << endl;
-    #ifdef __APPLE__
+#ifdef __APPLE__
     cout << RED << "[" << YELLOW << true_cxx << ver_string(__clang_major__, __clang_minor__, __clang_patchlevel__) << BOLDCYAN << "(" << Version << ")" << RESET << RED << " G++ " << YELLOW << ver_string(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__) << RED << "]" << YELLOW << "-> " << getOsName() << RESET << endl;
-    #endif
+#endif
     List->push_back(SET('<', "Go to The Left Cell(THISCELLPTR=THISCELLPTR->Left)"));
     List->push_back(SET('>', "Go to The Right Cell(THISCELLPTR=THISCELLPTR->Right)"));
     List->push_back(SET('.', "Print the Value of Your Cell (As Char(S) or int(M))"));
@@ -859,7 +856,7 @@ int Link()
                 pathp.erase(0, 2);
 #endif
                 op.close();
-                tempnc = "g++ -std=c++17 " + pathp + ".cpp -w -o _" + pathp + " -I" + INSPath + "/.RFIHEADER ;rm " + pathp + ".cpp";
+                tempnc = "g++ -std=c++17 " + pathp + ".cpp -w -O3 -o _" + pathp + " -I" + INSPath + "/.RFIHEADER ;rm " + pathp + ".cpp";
                 system(tempnc.c_str());
             }
             tempnc = "";
@@ -874,7 +871,7 @@ int Link()
     }
 }
 #define RFISTR << "#Link#\n|Update|(%>RFI --update%$;)|PRE_INIT|(@^+++*+@V;)|Compile|(%>" \
-               << "g++ -std=c++17 " << p << "/main.cpp -I" << p << " -o RFI 2>Log 1>Log%$;)|Install|([>]%>./RFI --install%$@V%>rm Log ; rm RFI%$@^;)|ERROR_CHECKING|(<'=}_{[S%<NO ERROR!%[<.]^.V%<Install% =< ;]%>Log%&>S[?.]:S%<ERROR!%[<.]^.V;)|Main|(%>Update% =>%>PRE_INIT% => %>Compile% =>>%>ERROR_CHECKING% =>)";
+               << "g++ -O3 -std=c++17 " << p << "/main.cpp -I" << p << " -o RFI 2>Log 1>Log%$;)|Install|([>]%>./RFI --install%$@V%>rm Log ; rm RFI%$@^;)|ERROR_CHECKING|(<'=}_{[S%<NO ERROR!%[<.]^.V%<Install% =< ;]%>Log%&>S[?.]:S%<ERROR!%[<.]^.V;)|Main|(%>Update% =>%>PRE_INIT% => %>Compile% =>>%>ERROR_CHECKING% =>)";
 int Update()
 {
     ifstream PF(".RFIPATH");

@@ -40,8 +40,6 @@ int main(int argc, char **argv)
                         time_t InitTime = t2 - t1;
 #endif
                         ret = BF->Execute();
-                        // BF->DebugPrintAllCells(BF->DataSegm);
-                        //  cout<<*Code<<endl;
                         delete BF;
 #ifdef __APPLE__ || __MACH__
                         static std::__1::chrono::steady_clock::time_point t3 = std::chrono::high_resolution_clock::now();
@@ -78,7 +76,7 @@ int main(int argc, char **argv)
                 cout << "Welcome back " << getenv("USER") << "!" << endl;
                 string Fname = "";
                 string buff;
-
+                cout<<RED<<" ╔═════════╗\n ║         ║\n ║  ╔══════║═╗\n ║  ║  "<<RESET<<"("<<CYAN<<"0"<<RESET<<")"<<RED<<" ║ ║\n ╚══║══════╝ ║\n    ║        ║\n    ╚════════╝"<<RESET<<endl;
 #define IFIS(A) (strcmp(Fname.c_str(), A) == 0)
                 string *Code = new string("");
                 RFI *BF = new RFI(Code);
@@ -96,6 +94,6 @@ int main(int argc, char **argv)
                         *Code = "";
                 }
         }
-        cout<<ret<<endl;
+        //cout<<ret<<endl;
         return ret;
 }
