@@ -67,8 +67,11 @@ int main(int argc, char **argv)
                         Version = "C++11";
                 else if (__cplusplus == 199711)
                         Version = "C++98";
+                else if (__cplusplus==201707)
+                        Version="C++20";
                 else
                         Version = "pre-standard C++";
+                Version+=("["+to_string(__cplusplus)+"]");
                 cout << CYAN<<"RFI "<<BLUE<< RFIVERSION<<RESET<< endl;
                 #ifdef __APPLE__
                 cout << RED << "[" << YELLOW << true_cxx << ver_string(__clang_major__, __clang_minor__, __clang_patchlevel__) << BOLDCYAN << "(" << Version << ")" << RESET << RED << " G++ " << YELLOW << ver_string(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__) << RED << "]" << RESET << endl;
@@ -88,9 +91,7 @@ int main(int argc, char **argv)
                         if (IFIS("help"))
                                 Help();
                         // cout<<Fname.size()<<endl;
-                        Code->append(Fname);
-                        BF->INIT();
-                        BF->Execute(Code);
+                        system(buff.c_str());
                         *Code = "";
                 }
         }

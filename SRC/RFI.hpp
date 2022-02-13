@@ -658,17 +658,19 @@ void Help()
 {
     string Version;
 
-    if (__cplusplus == 201703)
-        Version = "C++17";
-    else if (__cplusplus == 201402)
-        Version = "C++14";
-    else if (__cplusplus == 201103)
-        Version = "C++11";
-    else if (__cplusplus == 199711)
-        Version = "C++98";
-    else
-        Version = "pre-standard C++";
-
+                if (__cplusplus == 201703)
+                        Version = "C++17";
+                else if (__cplusplus == 201402)
+                        Version = "C++14";
+                else if (__cplusplus == 201103)
+                        Version = "C++11";
+                else if (__cplusplus == 199711)
+                        Version = "C++98";
+                else if (__cplusplus==201707)
+                        Version="C++20";
+                else
+                        Version = "pre-standard C++";
+Version+=("["+to_string(__cplusplus)+"]");
     vector<HelpByChar *> *List = new vector<HelpByChar *>();
     cout << "RFI Version : " << RFIVERSION << endl;
 #ifdef __APPLE__
